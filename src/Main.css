@@ -1,0 +1,41 @@
+.Main {
+    background-color: black;
+    height: 1024px;
+    width:100%
+}
+
+.title {
+    margin-left: 15%;
+    padding-top: 8%;
+    color: white;
+    font-size: 45px;
+  }
+
+.secondSentence{
+    color: white;
+    margin:10px;
+    margin-left: 0px;
+    font-size: 28px; 
+}
+
+.thirdSentence{
+    font-size: 18px; 
+    margin: 10px;
+    margin-left: 0px;
+    color: greenyellow;
+}
+
+.contents{
+    color: white;
+    font-size: 27px;
+    margin-left: 15%;
+    margin-top: 35px;
+    line-height: 1.5;
+}
+
+.member{
+    color:white;
+    font-size: 18px;
+    margin-left:15%;
+    margin-top: 100px;
+}
