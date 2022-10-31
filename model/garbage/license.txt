@@ -1,0 +1,11 @@
+Model Information:
+* title:	gARbage
+* source:	https://sketchfab.com/3d-models/garbage-8e0b5ac5e40f4d0d817b360f284e7096
+* author:	Don B (https://sketchfab.com/nomomo)
+
+Model License:
+* license type:	CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
+* requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "gARbage" (https://sketchfab.com/3d-models/garbage-8e0b5ac5e40f4d0d817b360f284e7096) by Don B (https://sketchfab.com/nomomo) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)

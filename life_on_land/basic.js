@@ -1,6 +1,3 @@
-import * as THREE from 'three'; // three.js 라이브러리 import
-import { OrbitControls} from '../build/OrbitControls.js'; // 마우스 컨트롤을 할 수 있도록 하는 OribitControls 클래스 import  
-
 /*
  three.js의 기본 구성 요소
  1. 3차원 객체로 구성되는 Scene
@@ -11,18 +8,39 @@ import { OrbitControls} from '../build/OrbitControls.js'; // 마우스 컨트롤
      Mesh는 object3D의 파생 클래스
  5. Mesh는 형상을 정의하는 Geometry와 색상 및 투명도 등을 정의하는 Material로 정의됨 
 */
-var x = 0;
-var y = 0;
-var z = 20;
-class App{
-    constructor(){
+
+var x = 0; // 카메라 x 좌표
+var y = 0; // 카메라 y 좌표
+var z = 20; // 카메라 z 좌표;
+
+var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
+
+const TOTAL_GALBAGE = 6; // 순환할 쓰레기 오브젝트의 총 개수
+
+var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
+var flag = true; // 기준 바닥에 닿았는지 판단(= 새로 쓰레기 obj를 만들지)
+
+var garbages = []; // 랜덤으로 생성한 도형들을 담는 배열
+
+var modelPathArray = [
+    '../model/beer_bottle/scene.gltf', // 병(유리)
+    '../model/crumbled_paper/scene.gltf', // 종이
+    '../model/garbage/scene.gltf', // 캔
+    '../model/garbage_bag/scene.gltf', // 비닐
+    '../model/plastic_water_bottle/scene.gltf' // 플라스틱
+]; // GLTF 모델을 불러오기 위한 모델들의 경로 배열
+
+var modelScaleArray = [0.2, 18, 45, 0.025, 0.35]; // GLTF 모델들의 각각 scale 값
+
+class App {
+    constructor() {
         // id가 webgl-container div 태그 객체 가져옴
         const divContainer = document.querySelector("#webgl-container");
         // divContainer를 클래스의 멤버로 지정 (다른 method에서 전역으로 참조하기 위함)
-        this._divContainer = divContainer; 
+        this._divContainer = divContainer;
 
         // Renderer 객체 생성 (antialias 속성은 Scene이 렌더링될 때 오브젝트들의 경계선이 부드럽게 표현)
-        const renderer = new THREE.WebGLRenderer({antialias: true});
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
 
         // 픽셀의 Radio 속성 설정
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -53,7 +71,7 @@ class App{
         this.resize();
 
         window.onkeydown = (e) => {
-            switch(e.key){
+            switch (e.key) {
                 case 'a':
                     x -= 2;
                     break;
@@ -61,7 +79,7 @@ class App{
                     x += 2;
                     break;
                 case 'w':
-                    z-= 2;
+                    z -= 2;
                     break;
                 case 's':
                     z += 2;
@@ -74,23 +92,24 @@ class App{
                     break;
             }
 
-            this._camera.position.set(x, y ,z);
+            this._camera.position.set(x, y, z);
         };
 
     }
 
-    _setupControls(){
-        new OrbitControls(this._camera, this._divContainer);
+    _setupControls() {
+        var control = new THREE.OrbitControls(this._camera, this._divContainer);
+        this._control = control;
     }
 
-    _setupCamera(){
+    _setupCamera() {
         // 3차원 그래픽을 출력할 영역에 대한 가로, 세로 크기 가져오기
         const width = this._divContainer.clientWidth;
         const height = this._divContainer.clientHeight;
 
         // 카메라 객체 생성(PerspectiveCamera: 거리감(원근감), Orthographic: 원근감 없이 물체의 크기대로)
         // Perspective: 4개의 인자 (fovy, aspect, zNear, zFar) -> 절두체 생성
-            // 절두체 안에 존재하는 물체가 카메라를 통해 화면상에 렌더링
+        // 절두체 안에 존재하는 물체가 카메라를 통해 화면상에 렌더링
         const camera = new THREE.PerspectiveCamera(
             75, // fovy: 절두체의 높이 방향에 대한 각도(단위: degree)
             width / height, // aspect: 절두체의 가로 길이를 세로 길이로 나눈 비율
@@ -98,43 +117,42 @@ class App{
             100 // zFar: 카메라로부터의 거리(카메라로부터 최대 지점, 뒷부분) 
         );
         // (zNear ~ zFar) 거리 사이에 존재하는 물체의 일부만 렌더링됨, 이 영역 벗어나면 렌더링x
-        
+
         // camera.zoom = 2; // 크기 조정(배수) -> Orthographic에만 적용?..
 
-        camera.position.z = 20; // 카메라의 z좌표 위치 변경
+        camera.position.z = 40; // 카메라의 z좌표 위치 변경
         // camera.position.x = -3; // 카메라의 x좌표 위치 변경
 
         // camera.position.set(7, 7, 0); // 카메라의 위치를 (7, 7, 0)으로 배치
         // camera.lookAt(0, 0, 0); // 카메라가 원점인 (0, 0, 0)을 바라보도록 설정 
-        
+
         // 카메라 객체를 필드화
         this._camera = camera;
     }
 
-    _setupLight(){
-        const color= 0xffffff; // 광원의 색
+    _setupLight() {
+        const color = 0xffffff; // 광원의 색
         const intensity = 1; // 광원의 세기(밝기)
         const light = new THREE.DirectionalLight(color, intensity); // 광원의 색과 세기를 인자 값으로 받아 생성
         light.position.set(-1, 2, 4); // 광원의 위치 
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
     }
 
-    _setupModel(){
+    _setupModel() {
 
         // const geometry = new THREE.BoxGeometry(1, 1, 1); // 정육면체에 대한 형상 정의 -> geometry 객체 생성
-            // 인자 값은 각각 가로, 세로, 깊이
+        // 인자 값은 각각 가로, 세로, 깊이
 
         // const material = new THREE.MeshPhongMaterial({color: 0x44a88});
-            // 정육면체의 재질을 정의하기 위한 material 객체
+        // 정육면체의 재질을 정의하기 위한 material 객체
 
         // const cube = new THREE.Mesh(geometry, material);
-            // Mesh 생성, 형상과 재질을 인자로 받으면서
+        // Mesh 생성, 형상과 재질을 인자로 받으면서
 
         // this._scene.add(cube); // Scene에 위 Mesh를 추가
-        
 
-        /* Scene Graph 이용 */ 
-        
+
+        /* Scene Graph 이용 */
         const solarSystem = new THREE.Object3D();
         this._scene.add(solarSystem);
 
@@ -177,26 +195,29 @@ class App{
         this._solarSystem = solarSystem;
         this._earthOrbit = earthOrbit;
         this._moonOrbit = moonOrbit;
+
+        const loader = new THREE.GLTFLoader();
+        this._loader = loader;
     }
 
-    resize(){
+    resize() {
         // 크기 가져오기
         const width = this._divContainer.clientWidth;
         const height = this._divContainer.clientHeight;
 
         // 카메라 속성 값 지정
-        this._camera.aspect = width / height; 
+        this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
 
         // Renderer의 크기 설정
         this._renderer.setSize(width, height);
     }
 
-    _setupBackground(){
+    _setupBackground() {
         // 텍스쳐 로더 객체 생성(정방형맵 -> 하나의 이미지를 360도로 보이도록)
-            // 큐브맵: 6개의 이미지를 정육면체로 맵을 구성 -> CubeTextureLoader()
-        const loader = new THREE.TextureLoader(); 
-        
+        // 큐브맵: 6개의 이미지를 정육면체로 맵을 구성 -> CubeTextureLoader()
+        const loader = new THREE.TextureLoader();
+
         loader.load("../map/goegap.jpg", texture => {
             const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
             renderTarget.fromEquirectangularTexture(this._renderer, texture);
@@ -205,22 +226,52 @@ class App{
 
             requestAnimationFrame(this.render.bind(this));
 
-        })
+        });
     }
-    render(time){
-        // time 인자는 렌더링이 처음 시작된 이후 경과된 시간 값 (millisec)
 
-        // Renderer가 Scene을 카메라의 시점으로 렌더링을 하라는 코드
+    render(time) {
+        if (isAdded)
+            this._createGarbage();
+
+        if (garbages.length > 0) {
+            var currentRandomIndex = Math.floor(Math.random() * garbages.length);
+            var weight = 1 + (Math.random() * 5);
+
+            if (garbages[currentRandomIndex].position.y < -30) {
+                lastIndex = currentRandomIndex;
+                this._scene.remove(garbages[currentRandomIndex]);
+                flag = false;
+            }
+            garbages[currentRandomIndex].position.y -= 1 * weight;
+        }
+
         this._renderer.render(this._scene, this._camera);
 
-        // 속성 값 변경함으로써 애니메이션 효과 발생
-        this.update(time);
-
-        // render 메소드가 무한으로 반복하여 호출
         requestAnimationFrame(this.render.bind(this));
     }
 
-    update(time){
+    createDonut() {
+        var geometry = new THREE.TorusGeometry(1, 0.5, 5, 30);
+        var material = new THREE.MeshBasicMaterial({ color: 0xffffff * Math.random });
+        var donut = new THREE.Mesh(geometry, material);
+
+        donut.position.x = this.randomRange(-15, 15);
+        donut.position.z = this.randomRange(-15, 15);
+        donut.position.y = 10;
+
+        if (garbages.length < TOTAL_GALBAGE) {
+            garbages.push(donut);
+            this._scene.add(donut);
+        }
+        else if (garbages.length == TOTAL_GALBAGE && !flag) {
+            flag = true;
+            garbages[lastIndex] = donut;
+            this._scene.add(donut);
+        }
+
+    }
+
+    update(time) {
         time *= 0.001; // 1/1000을 곱해서 단위를 sec 단위로 변환
 
         /* Mesh들의 transformation */
@@ -234,9 +285,60 @@ class App{
         // 카메라의 위치가 Moon Mesh의 위치로 계속 업데이트
         // this._moonOrbit.getWorldPosition(this._camera.position); 
     }
+
+    randomRange(from, to) {
+        var x = Math.random() * (to - from);
+        return x + from;
+    }
+
+    _createGarbage() {
+        var that = this;
+
+        var randomIndex = Math.floor(Math.random() * 5);
+
+        if (garbages.length < TOTAL_GALBAGE) {
+            isAdded = false;
+
+            this._loader.load(modelPathArray[randomIndex], function (gltf) {
+
+                gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
+                gltf.scene.position.x = that.randomRange(-20, 20);
+                gltf.scene.position.z = that.randomRange(-20, 20);
+                gltf.scene.position.y = 60;
+
+                garbages.push(gltf.scene);
+                that._scene.add(gltf.scene);
+
+                isAdded = true;
+            }, undefined, (error) => {
+                console.log(error);
+            });
+
+        }
+        else if (garbages.length == TOTAL_GALBAGE && !flag) {
+            isAdded = false;
+
+            this._loader.load(modelPathArray[randomIndex], function (gltf) {
+
+                gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
+                gltf.scene.position.x = that.randomRange(-20, 20);
+                gltf.scene.position.z = that.randomRange(-20, 20);
+                gltf.scene.position.y = 60;
+
+                garbages[lastIndex] = gltf.scene;
+                that._scene.add(gltf.scene);
+
+                flag = true;
+                isAdded = true;
+
+            }, undefined, (error) => {
+                console.log(error);
+            });
+        }
+    }
 }
 
 // 페이지가 모두 로드가 되면 위에 만든 클래스에 대한 인스턴스 생성
-window.onload = function(){
+window.onload = function () {
     new App();
 }

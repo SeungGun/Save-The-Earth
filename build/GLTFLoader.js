@@ -1,3 +1,4 @@
+
 ( function () {
 
 	class GLTFLoader extends THREE.Loader {
