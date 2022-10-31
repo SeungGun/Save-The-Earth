@@ -10,18 +10,20 @@
 */
 
 var x = 0; // 카메라 x 좌표
-var y = 0; // 카메라 y 좌표
-var z = 20; // 카메라 z 좌표;
+var y = 30; // 카메라 y 좌표
+var z = 110; // 카메라 z 좌표;
 
 var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
 
-const TOTAL_GALBAGE = 6; // 순환할 쓰레기 오브젝트의 총 개수
+const TOTAL_GALBAGE = 10; // 순환할 쓰레기 오브젝트의 총 개수
 
+var currentGarbageIndex = 1;
 var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
 var flag = true; // 기준 바닥에 닿았는지 판단(= 새로 쓰레기 obj를 만들지)
+var isCollision = false;
 
 var garbages = []; // 랜덤으로 생성한 도형들을 담는 배열
-
+var point = 0;
 var modelPathArray = [
     '../model/beer_bottle/scene.gltf', // 병(유리)
     '../model/crumbled_paper/scene.gltf', // 종이
@@ -30,7 +32,14 @@ var modelPathArray = [
     '../model/plastic_water_bottle/scene.gltf' // 플라스틱
 ]; // GLTF 모델을 불러오기 위한 모델들의 경로 배열
 
-var modelScaleArray = [0.2, 18, 45, 0.025, 0.35]; // GLTF 모델들의 각각 scale 값
+var containerTextureArray = [
+    '../model/texture_glass.jpg',
+    '../model/texture_paper.jpg',
+    '../model/texture_can.jpg',
+    '../model/texture_vinyl.jpg',
+    '../model/texture_pet.png'
+];
+var modelScaleArray = [0.5, 60, 120, 0.045, 0.7]; // GLTF 모델들의 각각 scale 값
 
 class App {
     constructor() {
@@ -44,7 +53,7 @@ class App {
 
         // 픽셀의 Radio 속성 설정
         renderer.setPixelRatio(window.devicePixelRatio);
-
+        renderer.shadowMap.enabled = true;
         // 생성된 Renderer의 domElement를 id가 webgl-container인 divContainer의 자식으로 추가
         // renderer.domElement는 canvas 타입의 dom 객체
         divContainer.appendChild(renderer.domElement);
@@ -73,24 +82,50 @@ class App {
         window.onkeydown = (e) => {
             switch (e.key) {
                 case 'a':
-                    x -= 2;
+                case 'ArrowLeft':
+                    if (this._container.position.x > -45) {
+                        x -= 5;
+                        this._container.position.x -= 5;
+
+                    }
                     break;
                 case 'd':
-                    x += 2;
+                case 'ArrowRight':
+                    if (this._container.position.x < 45) {
+                        x += 5;
+                        this._container.position.x += 5;
+
+                    }
                     break;
                 case 'w':
-                    z -= 2;
+                case 'ArrowUp':
+                    if (this._container.position.z > -45) {
+                        z -= 5;
+                        this._container.position.z -= 5;
+
+                    }
                     break;
                 case 's':
-                    z += 2;
+                case 'ArrowDown':
+                    if (this._container.position.z < 45) {
+                        z += 5;
+                        this._container.position.z += 5;
+                    }
                     break;
                 case ' ':
-                    y += 2;
+                    if(this._container.position.y < -5){
+                        this._container.position.y += 3;
+                        y += 3;
+                    }
                     break;
                 case 'Shift':
-                    y -= 2;
+                    if(this._container.position.y > -20){
+                        this._container.position.y -= 3;
+                        y -= 3;
+                    }
                     break;
             }
+
 
             this._camera.position.set(x, y, z);
         };
@@ -111,31 +146,42 @@ class App {
         // Perspective: 4개의 인자 (fovy, aspect, zNear, zFar) -> 절두체 생성
         // 절두체 안에 존재하는 물체가 카메라를 통해 화면상에 렌더링
         const camera = new THREE.PerspectiveCamera(
-            75, // fovy: 절두체의 높이 방향에 대한 각도(단위: degree)
+            80, // fovy: 절두체의 높이 방향에 대한 각도(단위: degree)
             width / height, // aspect: 절두체의 가로 길이를 세로 길이로 나눈 비율
             0.1, // zNear: 카메라로부터의 거리(카메라로부터 최소 지점, 앞부분)
-            100 // zFar: 카메라로부터의 거리(카메라로부터 최대 지점, 뒷부분) 
+            1000 // zFar: 카메라로부터의 거리(카메라로부터 최대 지점, 뒷부분) 
         );
         // (zNear ~ zFar) 거리 사이에 존재하는 물체의 일부만 렌더링됨, 이 영역 벗어나면 렌더링x
 
         // camera.zoom = 2; // 크기 조정(배수) -> Orthographic에만 적용?..
 
-        camera.position.z = 40; // 카메라의 z좌표 위치 변경
-        // camera.position.x = -3; // 카메라의 x좌표 위치 변경
-
+        camera.position.z = z; // 카메라의 z좌표 위치 변경
+        camera.position.y = y; // 카메라의 y좌표 위치 변경
+        // camera.rotation.set(Math.PI, 0, Math.PI /2);
         // camera.position.set(7, 7, 0); // 카메라의 위치를 (7, 7, 0)으로 배치
-        // camera.lookAt(0, 0, 0); // 카메라가 원점인 (0, 0, 0)을 바라보도록 설정 
+        camera.lookAt(0, 60, 0); // 카메라가 (0, -30, 0)을 바라보도록 설정 
 
         // 카메라 객체를 필드화
         this._camera = camera;
     }
 
     _setupLight() {
-        const color = 0xffffff; // 광원의 색
+        const color = 0x888888; // 광원의 색
         const intensity = 1; // 광원의 세기(밝기)
         const light = new THREE.DirectionalLight(color, intensity); // 광원의 색과 세기를 인자 값으로 받아 생성
-        light.position.set(-1, 2, 4); // 광원의 위치 
+        this._light = light;
+        light.position.set(0, 80, 0); // 광원의 위치 
+        light.shadow.camera.left = -300;
+        light.shadow.camera.right = 300;
+        light.shadow.camera.top = 300;
+        light.shadow.camera.bottom = -300;
+
+        light.castShadow = true;
+
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
+
+        this._scene.add(new THREE.CameraHelper(light.shadow.camera));
+
     }
 
     _setupModel() {
@@ -153,6 +199,8 @@ class App {
 
 
         /* Scene Graph 이용 */
+
+        /*
         const solarSystem = new THREE.Object3D();
         this._scene.add(solarSystem);
 
@@ -196,6 +244,54 @@ class App {
         this._earthOrbit = earthOrbit;
         this._moonOrbit = moonOrbit;
 
+        */
+        const planeGeometry = new THREE.BoxGeometry(120, 120, 1);
+        const planeMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.receiveShadow = true;
+        plane.rotation.x = -Math.PI / 2;
+        plane.position.y = -30;
+        this._scene.add(plane);
+
+        const containerGeometry = new THREE.BoxGeometry(15, 6, 15);
+
+        const textureLoader = new THREE.TextureLoader();
+        this._textureLoader = textureLoader;
+
+        var random = Math.floor(Math.random() * 5);
+        currentGarbageIndex = random;
+        const img = this._textureLoader.load(containerTextureArray[random]);
+        const materials = [
+            new THREE.MeshBasicMaterial({ map: img }),
+            new THREE.MeshBasicMaterial({ map: img }),
+            new THREE.MeshBasicMaterial({ map: img }),
+            new THREE.MeshBasicMaterial({ map: img }),
+            new THREE.MeshBasicMaterial({ map: img }),
+            new THREE.MeshBasicMaterial({ map: img }),
+        ];
+        const container = new THREE.Mesh(containerGeometry, materials);
+        container.position.y = -5;
+        container.castShadow = true;
+
+
+        this._container = container;
+        this._scene.add(container);
+
+        // const text = new THREE.TextGeometry("TEST", {
+        //     font: helvatiker,
+        //     size:9,
+        //     height: 1.5,
+        //     curveSegments: 4,
+        //     bevelEnabled: true,
+        //     bevelThickness: 0.7,
+        //     bevelSize: .7,
+        //     bevelSegments: 2
+        // });
+
+        // const m = new THREE.Mesh(text, containerMaterial);
+
+        // this._scene.add(m);
+
         const loader = new THREE.GLTFLoader();
         this._loader = loader;
     }
@@ -235,18 +331,63 @@ class App {
 
         if (garbages.length > 0) {
             var currentRandomIndex = Math.floor(Math.random() * garbages.length);
-            var weight = 1 + (Math.random() * 5);
+            var weight = 1 + (Math.random() * 6);
 
             if (garbages[currentRandomIndex].position.y < -30) {
                 lastIndex = currentRandomIndex;
                 this._scene.remove(garbages[currentRandomIndex]);
                 flag = false;
             }
-            garbages[currentRandomIndex].position.y -= 1 * weight;
+            else {
+                garbages[currentRandomIndex].position.y -= 2 * weight;
+            }
+
+            const containerBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+            containerBB.setFromObject(this._container);
+
+            const garbageBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+            garbageBB.setFromObject(garbages[currentRandomIndex]);
+
+            if (containerBB.intersectsBox(garbageBB) && !isCollision) {
+                // console.log("index: "+currentRandomIndex+" col: "+isCollision);
+                // if (!isCollision) {
+                    if (garbages[currentRandomIndex].index != -1 && garbages[currentRandomIndex].index == currentGarbageIndex){
+                        point++;
+                    }
+                    else{
+                        if(point > 0 && garbages[currentRandomIndex].index != -1 ){
+                            point--;
+                        }
+                    }
+
+                    isCollision = true;
+                    this._scene.remove(garbages[currentRandomIndex]);
+                    garbages[currentRandomIndex].index = -1;
+                // }
+
+                if (point > 0 && point % 5 == 0) {
+                    var random = Math.floor(Math.random() * 5);
+                    currentGarbageIndex = random;
+
+                    var loaded = this._textureLoader.load(containerTextureArray[random]);
+                    this._container.material = [
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                        new THREE.MeshBasicMaterial({ map: loaded }),
+                    ];
+                }
+                flag = false;
+                lastIndex = currentRandomIndex;
+                console.log("point: "+point);
+            }
+            isCollision = false;
         }
 
         this._renderer.render(this._scene, this._camera);
-
+        // this._control.update();
         requestAnimationFrame(this.render.bind(this));
     }
 
@@ -294,17 +435,23 @@ class App {
     _createGarbage() {
         var that = this;
 
-        var randomIndex = Math.floor(Math.random() * 5);
 
         if (garbages.length < TOTAL_GALBAGE) {
             isAdded = false;
+            var randomIndex = Math.floor(Math.random() * 5);
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
                 gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
-                gltf.scene.position.x = that.randomRange(-20, 20);
-                gltf.scene.position.z = that.randomRange(-20, 20);
-                gltf.scene.position.y = 60;
+                gltf.scene.position.x = that.randomRange(-50, 50);
+                gltf.scene.position.z = that.randomRange(-50, 50);
+                gltf.scene.position.y = 70;
+
+                gltf.scene.index = randomIndex;
+                gltf.scene.traverse(function (node) {
+                    if (node.isMesh || node.isLight) node.castShadow = true;
+                    if (node.isMesh || node.isLight) node.receiveShadow = true;
+                });
 
                 garbages.push(gltf.scene);
                 that._scene.add(gltf.scene);
@@ -317,13 +464,21 @@ class App {
         }
         else if (garbages.length == TOTAL_GALBAGE && !flag) {
             isAdded = false;
+            var randomIndex = Math.floor(Math.random() * 5);
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
                 gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
-                gltf.scene.position.x = that.randomRange(-20, 20);
-                gltf.scene.position.z = that.randomRange(-20, 20);
-                gltf.scene.position.y = 60;
+                gltf.scene.position.x = that.randomRange(-50, 50);
+                gltf.scene.position.z = that.randomRange(-50, 50);
+                gltf.scene.position.y = 70;
+
+                gltf.scene.index = randomIndex;
+
+                gltf.scene.traverse(function (node) {
+                    if (node.isMesh || node.isLight) node.castShadow = true;
+                    if (node.isMesh || node.isLight) node.receiveShadow = true;
+                });
 
                 garbages[lastIndex] = gltf.scene;
                 that._scene.add(gltf.scene);
