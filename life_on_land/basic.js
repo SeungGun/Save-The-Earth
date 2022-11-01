@@ -10,12 +10,19 @@
 */
 
 var x = 0; // 카메라 x 좌표
-var y = 30; // 카메라 y 좌표
-var z = 110; // 카메라 z 좌표;
+var y = 40; // 카메라 y 좌표
+var z = 150; // 카메라 z 좌표;
 
 var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
 
 const TOTAL_GALBAGE = 10; // 순환할 쓰레기 오브젝트의 총 개수
+const INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는 y 값)
+const MAX_WEIGHT_SPEED = 6; // 최대 가중치 속도
+const GARBAGE_SPAWN_Y = 70; // 쓰레기 생성 y 위치
+const GROUND_SIZE = 200; // 바닥의 크기
+const CONTAINER_SIZE = 20; // 쓰레기통의 크기
+const MOVE_STEP = 5; // 쓰레기통의 이동 반경
+const THRESHOLD = -30; // 기준 y
 
 var currentGarbageIndex = 1;
 var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
@@ -39,7 +46,7 @@ var containerTextureArray = [
     '../model/texture_vinyl.jpg',
     '../model/texture_pet.png'
 ];
-var modelScaleArray = [0.5, 60, 120, 0.045, 0.7]; // GLTF 모델들의 각각 scale 값
+var modelScaleArray = [0.5, 80, 140, 0.06, 0.7]; // GLTF 모델들의 각각 scale 값
 
 class App {
     constructor() {
@@ -53,7 +60,10 @@ class App {
 
         // 픽셀의 Radio 속성 설정
         renderer.setPixelRatio(window.devicePixelRatio);
+
+        // 그림자 허용
         renderer.shadowMap.enabled = true;
+
         // 생성된 Renderer의 domElement를 id가 webgl-container인 divContainer의 자식으로 추가
         // renderer.domElement는 canvas 타입의 dom 객체
         divContainer.appendChild(renderer.domElement);
@@ -79,57 +89,53 @@ class App {
         // resize 이벤트 상관 없이 한번 무조건 호출: renderer, camera의 속성을 창 크기에 맞게 초기화
         this.resize();
 
+        /* 키보드 이벤트 */
         window.onkeydown = (e) => {
             switch (e.key) {
                 case 'a':
                 case 'ArrowLeft':
-                    if (this._container.position.x > -45) {
-                        x -= 5;
-                        this._container.position.x -= 5;
-
+                    if (this._container.position.x > -(GROUND_SIZE / 2 - MOVE_STEP)) {
+                        x -= MOVE_STEP;
+                        this._container.position.x -= MOVE_STEP;
                     }
                     break;
                 case 'd':
                 case 'ArrowRight':
-                    if (this._container.position.x < 45) {
-                        x += 5;
-                        this._container.position.x += 5;
-
+                    if (this._container.position.x < (GROUND_SIZE / 2 - MOVE_STEP)) {
+                        x += MOVE_STEP;
+                        this._container.position.x += MOVE_STEP;
                     }
                     break;
                 case 'w':
                 case 'ArrowUp':
-                    if (this._container.position.z > -45) {
-                        z -= 5;
-                        this._container.position.z -= 5;
-
+                    if (this._container.position.z > -(GROUND_SIZE / 2 - MOVE_STEP)) {
+                        z -= MOVE_STEP;
+                        this._container.position.z -= MOVE_STEP;
                     }
                     break;
                 case 's':
                 case 'ArrowDown':
-                    if (this._container.position.z < 45) {
-                        z += 5;
-                        this._container.position.z += 5;
+                    if (this._container.position.z < (GROUND_SIZE / 2 - MOVE_STEP)) {
+                        z += MOVE_STEP;
+                        this._container.position.z += MOVE_STEP;
                     }
                     break;
                 case ' ':
-                    if(this._container.position.y < -5){
+                    if (this._container.position.y < -5) {
                         this._container.position.y += 3;
                         y += 3;
                     }
                     break;
                 case 'Shift':
-                    if(this._container.position.y > -20){
+                    if (this._container.position.y > -20) {
                         this._container.position.y -= 3;
                         y -= 3;
                     }
                     break;
             }
 
-
             this._camera.position.set(x, y, z);
         };
-
     }
 
     _setupControls() {
@@ -159,24 +165,26 @@ class App {
         camera.position.y = y; // 카메라의 y좌표 위치 변경
         // camera.rotation.set(Math.PI, 0, Math.PI /2);
         // camera.position.set(7, 7, 0); // 카메라의 위치를 (7, 7, 0)으로 배치
-        camera.lookAt(0, 60, 0); // 카메라가 (0, -30, 0)을 바라보도록 설정 
+        camera.lookAt(0, 60, 0); // 카메라가 (0, 60, 0)을 바라보도록 설정 
 
         // 카메라 객체를 필드화
         this._camera = camera;
     }
 
     _setupLight() {
-        const color = 0x888888; // 광원의 색
+        const color = 0x666666; // 광원의 색
         const intensity = 1; // 광원의 세기(밝기)
         const light = new THREE.DirectionalLight(color, intensity); // 광원의 색과 세기를 인자 값으로 받아 생성
         this._light = light;
         light.position.set(0, 80, 0); // 광원의 위치 
-        light.shadow.camera.left = -300;
-        light.shadow.camera.right = 300;
-        light.shadow.camera.top = 300;
-        light.shadow.camera.bottom = -300;
 
-        light.castShadow = true;
+        /* 광원의 그림자 효과를 위한 카메라 크기 지정 */
+        light.shadow.camera.left = -350;
+        light.shadow.camera.right = 350;
+        light.shadow.camera.top = 350;
+        light.shadow.camera.bottom = -350;
+
+        light.castShadow = true; // 그림자 주기
 
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
 
@@ -186,77 +194,21 @@ class App {
 
     _setupModel() {
 
-        // const geometry = new THREE.BoxGeometry(1, 1, 1); // 정육면체에 대한 형상 정의 -> geometry 객체 생성
-        // 인자 값은 각각 가로, 세로, 깊이
+        /* 바닥 Mesh 정의 */
+        const groundGeometry = new THREE.BoxGeometry(GROUND_SIZE, GROUND_SIZE, 1);
+        const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 
-        // const material = new THREE.MeshPhongMaterial({color: 0x44a88});
-        // 정육면체의 재질을 정의하기 위한 material 객체
-
-        // const cube = new THREE.Mesh(geometry, material);
-        // Mesh 생성, 형상과 재질을 인자로 받으면서
-
-        // this._scene.add(cube); // Scene에 위 Mesh를 추가
-
-
-        /* Scene Graph 이용 */
-
-        /*
-        const solarSystem = new THREE.Object3D();
-        this._scene.add(solarSystem);
-
-        const radius = 1;
-        const widthSegments = 72;
-        const heightSegments = 72;
-        const sphereGeometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-
-        const sunMaterial = new THREE.MeshPhongMaterial({
-            emissive: 0xff0000, flatShading: true
-        });
-
-        const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial);
-        sunMesh.scale.set(3, 3, 3);
-        solarSystem.add(sunMesh);
-
-        const earthOrbit = new THREE.Object3D();
-        solarSystem.add(earthOrbit);
-
-        const earthMaterial = new THREE.MeshPhongMaterial({
-            color: 0x2233ff, emissive: 0x112244, flatShading: true
-        });
-
-        const earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
-        earthOrbit.position.x = 10;
-        earthOrbit.add(earthMesh);
-
-        const moonOrbit = new THREE.Object3D();
-        moonOrbit.position.x = 2; // 태양으로부터 거리가 10 + 2 만큼 떨어지게됨
-        earthOrbit.add(moonOrbit);
-
-        const moonMaterial = new THREE.MeshPhongMaterial({
-            color: 0x888888, emissive: 0x222222, flatShading: true
-        });
-
-        const moonMesh = new THREE.Mesh(sphereGeometry, moonMaterial);
-        moonMesh.scale.set(0.5, 0.5, 0.5);
-        moonOrbit.add(moonMesh);
-
-        this._solarSystem = solarSystem;
-        this._earthOrbit = earthOrbit;
-        this._moonOrbit = moonOrbit;
-
-        */
-        const planeGeometry = new THREE.BoxGeometry(120, 120, 1);
-        const planeMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        plane.receiveShadow = true;
-        plane.rotation.x = -Math.PI / 2;
-        plane.position.y = -30;
-        this._scene.add(plane);
-
-        const containerGeometry = new THREE.BoxGeometry(15, 6, 15);
+        ground.receiveShadow = true; // 그림자 받기
+        ground.rotation.x = -Math.PI / 2; // 회전
+        ground.position.y = -30; // y 좌표 이동
+        this._scene.add(ground);
 
         const textureLoader = new THREE.TextureLoader();
         this._textureLoader = textureLoader;
+
+        /* 쓰레기통 Mesh 정의 */
+        const containerGeometry = new THREE.BoxGeometry(CONTAINER_SIZE, 6, CONTAINER_SIZE);
 
         var random = Math.floor(Math.random() * 5);
         currentGarbageIndex = random;
@@ -269,28 +221,13 @@ class App {
             new THREE.MeshBasicMaterial({ map: img }),
             new THREE.MeshBasicMaterial({ map: img }),
         ];
+
         const container = new THREE.Mesh(containerGeometry, materials);
         container.position.y = -5;
-        container.castShadow = true;
-
+        container.castShadow = true; // 그림자 주기
 
         this._container = container;
         this._scene.add(container);
-
-        // const text = new THREE.TextGeometry("TEST", {
-        //     font: helvatiker,
-        //     size:9,
-        //     height: 1.5,
-        //     curveSegments: 4,
-        //     bevelEnabled: true,
-        //     bevelThickness: 0.7,
-        //     bevelSize: .7,
-        //     bevelSegments: 2
-        // });
-
-        // const m = new THREE.Mesh(text, containerMaterial);
-
-        // this._scene.add(m);
 
         const loader = new THREE.GLTFLoader();
         this._loader = loader;
@@ -325,50 +262,57 @@ class App {
         });
     }
 
-    render(time) {
+    render() {
+        /* GLTF 모델이 다 만들어졌다면*/
         if (isAdded)
             this._createGarbage();
 
         if (garbages.length > 0) {
             var currentRandomIndex = Math.floor(Math.random() * garbages.length);
-            var weight = 1 + (Math.random() * 6);
+            var weight = 1 + (Math.random() * MAX_WEIGHT_SPEED);
 
-            if (garbages[currentRandomIndex].position.y < -30) {
-                lastIndex = currentRandomIndex;
-                this._scene.remove(garbages[currentRandomIndex]);
+            /* 현재 garbage가 y 좌표가 -30 미만이라면 (= 바닥에 닿았다면) */
+            if (garbages[currentRandomIndex].position.y < THRESHOLD) {
+                lastIndex = currentRandomIndex; // 지워지는 obj의 index 기록
+                this._scene.remove(garbages[currentRandomIndex]); // scene에서 obj 제거
                 flag = false;
             }
-            else {
-                garbages[currentRandomIndex].position.y -= 2 * weight;
+            else { // 안 닿았다면 현재 garbage를 떨어뜨리기
+                garbages[currentRandomIndex].position.y -= INITIAL_DROP_SPEED * weight;
             }
 
+            // 쓰레기통의 Bounding Box 구하기
             const containerBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
             containerBB.setFromObject(this._container);
 
+            // 현재 Garbage의 Bounding Box 구하기
             const garbageBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
             garbageBB.setFromObject(garbages[currentRandomIndex]);
 
+            /* 쓰레기통과 현재 Garbage가 교차하면 (= 충돌하면) */
             if (containerBB.intersectsBox(garbageBB) && !isCollision) {
                 // console.log("index: "+currentRandomIndex+" col: "+isCollision);
-                // if (!isCollision) {
-                    if (garbages[currentRandomIndex].index != -1 && garbages[currentRandomIndex].index == currentGarbageIndex){
-                        point++;
-                    }
-                    else{
-                        if(point > 0 && garbages[currentRandomIndex].index != -1 ){
-                            point--;
-                        }
-                    }
 
-                    isCollision = true;
-                    this._scene.remove(garbages[currentRandomIndex]);
-                    garbages[currentRandomIndex].index = -1;
-                // }
+                /* 현재 garbage의 쓰레기 타입이 현재 쓰레기통의 맵핑 타입과 같다면 */
+                if (garbages[currentRandomIndex].index != -1 && garbages[currentRandomIndex].index == currentGarbageIndex) {
+                    point++; // 점수 추가
+                }
+                else {
+                    if (point > 0 && garbages[currentRandomIndex].index != -1) {
+                        point--; // 다른 타입과 충돌했다면 점수 차감
+                    }
+                }
 
+                isCollision = true;
+                this._scene.remove(garbages[currentRandomIndex]); // scene에서 obj 제거
+                garbages[currentRandomIndex].index = -1; // 제거된 obj의 index -1로 초기화
+
+                /* 현재 점수가 1 이상이고, 5의 배수 단위일 때 */
                 if (point > 0 && point % 5 == 0) {
                     var random = Math.floor(Math.random() * 5);
-                    currentGarbageIndex = random;
+                    currentGarbageIndex = random; // 랜덤 값을 현재 쓰레기 카테고리로 지정
 
+                    // 해당하는 쓰레기 카테고리에 대응되는 텍스처 이미지를 쓰레기통에 씌우기
                     var loaded = this._textureLoader.load(containerTextureArray[random]);
                     this._container.material = [
                         new THREE.MeshBasicMaterial({ map: loaded }),
@@ -379,15 +323,16 @@ class App {
                         new THREE.MeshBasicMaterial({ map: loaded }),
                     ];
                 }
+
                 flag = false;
                 lastIndex = currentRandomIndex;
-                console.log("point: "+point);
+                console.log("point: " + point);
             }
             isCollision = false;
         }
 
         this._renderer.render(this._scene, this._camera);
-        // this._control.update();
+
         requestAnimationFrame(this.render.bind(this));
     }
 
@@ -412,21 +357,6 @@ class App {
 
     }
 
-    update(time) {
-        time *= 0.001; // 1/1000을 곱해서 단위를 sec 단위로 변환
-
-        /* Mesh들의 transformation */
-
-        // this._cube.rotation.x = time;
-        // this._cube.rotation.y = time;
-        this._solarSystem.rotation.y = time / 2;
-        this._earthOrbit.rotation.y = time * 2;
-        this._moonOrbit.rotation.y = time * 5;
-
-        // 카메라의 위치가 Moon Mesh의 위치로 계속 업데이트
-        // this._moonOrbit.getWorldPosition(this._camera.position); 
-    }
-
     randomRange(from, to) {
         var x = Math.random() * (to - from);
         return x + from;
@@ -435,19 +365,23 @@ class App {
     _createGarbage() {
         var that = this;
 
-
         if (garbages.length < TOTAL_GALBAGE) {
             isAdded = false;
             var randomIndex = Math.floor(Math.random() * 5);
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
-                gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
-                gltf.scene.position.x = that.randomRange(-50, 50);
-                gltf.scene.position.z = that.randomRange(-50, 50);
-                gltf.scene.position.y = 70;
+                gltf.scene.scale.set(
+                    modelScaleArray[randomIndex],
+                    modelScaleArray[randomIndex],
+                    modelScaleArray[randomIndex]);
+                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+                gltf.scene.position.y = GARBAGE_SPAWN_Y;
 
                 gltf.scene.index = randomIndex;
+
+                // GLTF 모델을 traverse 하면서 현재 node 값에 해당하는 obj에 그림자 받기/주기 설정
                 gltf.scene.traverse(function (node) {
                     if (node.isMesh || node.isLight) node.castShadow = true;
                     if (node.isMesh || node.isLight) node.receiveShadow = true;
@@ -468,10 +402,14 @@ class App {
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
-                gltf.scene.scale.set(modelScaleArray[randomIndex], modelScaleArray[randomIndex], modelScaleArray[randomIndex]);
-                gltf.scene.position.x = that.randomRange(-50, 50);
-                gltf.scene.position.z = that.randomRange(-50, 50);
-                gltf.scene.position.y = 70;
+                gltf.scene.scale.set(
+                    modelScaleArray[randomIndex],
+                    modelScaleArray[randomIndex],
+                    modelScaleArray[randomIndex]);
+
+                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+                gltf.scene.position.y = GARBAGE_SPAWN_Y;
 
                 gltf.scene.index = randomIndex;
 
