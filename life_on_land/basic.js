@@ -228,7 +228,7 @@ class App {
 
         this._container = container;
         this._scene.add(container);
-
+        
         const loader = new THREE.GLTFLoader();
         this._loader = loader;
     }
@@ -332,7 +332,7 @@ class App {
         }
 
         this._renderer.render(this._scene, this._camera);
-
+        // this._control.update();
         requestAnimationFrame(this.render.bind(this));
     }
 
