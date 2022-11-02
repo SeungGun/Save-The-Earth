@@ -11,26 +11,33 @@
 
 var x = 0; // 카메라 x 좌표
 var y = 40; // 카메라 y 좌표
-var z = 150; // 카메라 z 좌표;
+var z = 120; // 카메라 z 좌표;
 
 var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
 
-const TOTAL_GALBAGE = 10; // 순환할 쓰레기 오브젝트의 총 개수
-const INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는 y 값)
-const MAX_WEIGHT_SPEED = 6; // 최대 가중치 속도
+const TOTAL_GALBAGE = 8; // 순환할 쓰레기 오브젝트의 총 개수
+var INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는 y 값)
+var MAX_WEIGHT_SPEED = 5; // 최대 가중치 속도
 const GARBAGE_SPAWN_Y = 70; // 쓰레기 생성 y 위치
-const GROUND_SIZE = 200; // 바닥의 크기
+const GROUND_SIZE = 220; // 바닥의 크기
 const CONTAINER_SIZE = 20; // 쓰레기통의 크기
-const MOVE_STEP = 5; // 쓰레기통의 이동 반경
+var MOVE_STEP = 15; // 쓰레기통의 이동 반경
+var JUMP_STEP = 3; // 쓰레기통의 상하 이동 반경
 const THRESHOLD = -30; // 기준 y
+var LIMIT_CONTAINER_UP = -5;
+var LIMIT_CONTAINER_DOWN = -20;
 
 var currentGarbageIndex = 1;
+var time = 100;
 var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
 var flag = true; // 기준 바닥에 닿았는지 판단(= 새로 쓰레기 obj를 만들지)
 var isCollision = false;
+var isTimeAdded = false;
 
 var garbages = []; // 랜덤으로 생성한 도형들을 담는 배열
 var point = 0;
+var cumulPoint = 0; // 누적 점수
+
 var modelPathArray = [
     '../model/beer_bottle/scene.gltf', // 병(유리)
     '../model/crumbled_paper/scene.gltf', // 종이
@@ -54,6 +61,16 @@ class App {
         const divContainer = document.querySelector("#webgl-container");
         // divContainer를 클래스의 멤버로 지정 (다른 method에서 전역으로 참조하기 위함)
         this._divContainer = divContainer;
+
+        /* DOM 객체 */
+        const score = document.getElementById("score");
+        this._score = score;
+
+        const img = document.getElementById("img");
+        this._img = img;
+
+        const timeElement = document.getElementById("time");
+        this._time = timeElement;
 
         // Renderer 객체 생성 (antialias 속성은 Scene이 렌더링될 때 오브젝트들의 경계선이 부드럽게 표현)
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -121,21 +138,31 @@ class App {
                     }
                     break;
                 case ' ':
-                    if (this._container.position.y < -5) {
-                        this._container.position.y += 3;
-                        y += 3;
+                    if (this._container.position.y < LIMIT_CONTAINER_UP) {
+                        this._container.position.y += JUMP_STEP;
+                        y += JUMP_STEP;
                     }
                     break;
                 case 'Shift':
-                    if (this._container.position.y > -20) {
-                        this._container.position.y -= 3;
-                        y -= 3;
+                    if (this._container.position.y > LIMIT_CONTAINER_DOWN) {
+                        this._container.position.y -= JUMP_STEP;
+                        y -= JUMP_STEP;
                     }
                     break;
             }
 
             this._camera.position.set(x, y, z);
         };
+        const timerId = setInterval(()=>{
+            if(time < 0){
+                clearInterval(this._timerId);
+                return;
+            }
+            this._time.innerHTML = "Time: "+time;
+            time--;
+        }, 1000);
+
+        this._timerId= timerId;
     }
 
     _setupControls() {
@@ -188,7 +215,7 @@ class App {
 
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
 
-        this._scene.add(new THREE.CameraHelper(light.shadow.camera));
+        // this._scene.add(new THREE.CameraHelper(light.shadow.camera));
 
     }
 
@@ -212,7 +239,9 @@ class App {
 
         var random = Math.floor(Math.random() * 5);
         currentGarbageIndex = random;
+        this._img.src = containerTextureArray[random];
         const img = this._textureLoader.load(containerTextureArray[random]);
+        
         const materials = [
             new THREE.MeshBasicMaterial({ map: img }),
             new THREE.MeshBasicMaterial({ map: img }),
@@ -296,6 +325,8 @@ class App {
                 /* 현재 garbage의 쓰레기 타입이 현재 쓰레기통의 맵핑 타입과 같다면 */
                 if (garbages[currentRandomIndex].index != -1 && garbages[currentRandomIndex].index == currentGarbageIndex) {
                     point++; // 점수 추가
+                    cumulPoint++; // 누적 점수 추가
+                    isTimeAdded = false; // 시간 추가 flag 초기화
                 }
                 else {
                     if (point > 0 && garbages[currentRandomIndex].index != -1) {
@@ -307,10 +338,19 @@ class App {
                 this._scene.remove(garbages[currentRandomIndex]); // scene에서 obj 제거
                 garbages[currentRandomIndex].index = -1; // 제거된 obj의 index -1로 초기화
 
+                /* 누적 점수가 3점씩 추가될 때마다 */
+                if(cumulPoint % 3 == 0 && !isTimeAdded){
+                    time += 6; // 타이머 6초 추가
+                    this._time.innerHTML = "Time: "+time;
+                    isTimeAdded = true;
+                }
+
                 /* 현재 점수가 1 이상이고, 5의 배수 단위일 때 */
                 if (point > 0 && point % 5 == 0) {
+                    
                     var random = Math.floor(Math.random() * 5);
                     currentGarbageIndex = random; // 랜덤 값을 현재 쓰레기 카테고리로 지정
+                    this._img.src = containerTextureArray[currentGarbageIndex];
 
                     // 해당하는 쓰레기 카테고리에 대응되는 텍스처 이미지를 쓰레기통에 씌우기
                     var loaded = this._textureLoader.load(containerTextureArray[random]);
@@ -327,6 +367,7 @@ class App {
                 flag = false;
                 lastIndex = currentRandomIndex;
                 console.log("point: " + point);
+                this._score.innerHTML = 'Score: '+point;
             }
             isCollision = false;
         }

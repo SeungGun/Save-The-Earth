@@ -1,23 +1,42 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="basic.css">
-        <script type="importmap">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="basic.css">
+    <script type="importmap">
             {
                 "imports" : {
                     "three" : "../build/three.module.js"
                 }
             }
         </script>
-        <!-- <script type="module" src="basic.js" defer></script> -->
-        <script type="text/javascript" src="../build/three.min.js"></script>
-        <script type="text/javascript" src="../build/GLTFLoader.js"></script>		
-        <script type="text/javascript" src="../build/OrbitControls.js"></script>
-        <script type="text/javascript" src="basic.js"></script>
-        <!-- defer 속성은 이 페이지가 모두 로딩된 이후에 javascript가 실행됨-->
-    </head>
-    <body>
-        <div id="webgl-container"></div>
-    </body>
+    <!-- <script type="module" src="basic.js" defer></script> -->
+    <script type="text/javascript" src="../build/three.min.js"></script>
+    <script type="text/javascript" src="../build/GLTFLoader.js"></script>
+    <script type="text/javascript" src="../build/OrbitControls.js"></script>
+    <script type="text/javascript" src="basic.js"></script>
+    <!-- defer 속성은 이 페이지가 모두 로딩된 이후에 javascript가 실행됨-->
+</head>
+
+<body>
+    <div id="top-bar">
+        <div class="inner">
+            <p id="score" class="text">Score : 0</p>
+        </div>
+        <div class="inner">
+            <div class="nested">
+                <p>Type : </p>
+            </div>
+            <div class="nested">
+                <img id="img" style="width: 65px; height: auto;" />
+            </div>
+        </div>
+        <div class="inner">
+            <p id="time" class="text">Time : 40</p>
+        </div>
+    </div>
+    <div id="webgl-container"></div>
+</body>
+
 </html>
