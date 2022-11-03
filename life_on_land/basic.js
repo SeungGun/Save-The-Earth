@@ -1,29 +1,22 @@
 /*
- three.js의 기본 구성 요소
- 1. 3차원 객체로 구성되는 Scene
- 2. 위 장면을 모니터와 같은 출력장치에 출력할 수 있는, 즉 렌더링할 수 있는 Renderer
-     장면을 렌더링할 때는 시점에 따라서 다양한 모습으로 렌더링됨
- 3. 그 시점을 Camera로 정의
- 4. 다시 장면(Scene)은 Light(광원)과 3차원 모델인 Mesh로 구성됨
-     Mesh는 object3D의 파생 클래스
- 5. Mesh는 형상을 정의하는 Geometry와 색상 및 투명도 등을 정의하는 Material로 정의됨 
+ 육상 생태계 
 */
-
 var x = 0; // 카메라 x 좌표
 var y = 40; // 카메라 y 좌표
 var z = 120; // 카메라 z 좌표;
 
 var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
 
-const TOTAL_GALBAGE = 8; // 순환할 쓰레기 오브젝트의 총 개수
+const TOTAL_GALBAGE = 6; // 순환할 쓰레기 오브젝트의 총 개수
 var INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는 y 값)
-var MAX_WEIGHT_SPEED = 5; // 최대 가중치 속도
+var MAX_WEIGHT_SPEED = 4; // 최대 가중치 속도
 const GARBAGE_SPAWN_Y = 70; // 쓰레기 생성 y 위치
 const GROUND_SIZE = 220; // 바닥의 크기
 const CONTAINER_SIZE = 20; // 쓰레기통의 크기
 var MOVE_STEP = 15; // 쓰레기통의 이동 반경
 var JUMP_STEP = 3; // 쓰레기통의 상하 이동 반경
 const THRESHOLD = -30; // 기준 y
+const TOTAL_ITEMS = 6; // 아이템 총 개수
 var LIMIT_CONTAINER_UP = -5;
 var LIMIT_CONTAINER_DOWN = -20;
 
@@ -35,6 +28,8 @@ var isCollision = false;
 var isTimeAdded = false;
 
 var garbages = []; // 랜덤으로 생성한 도형들을 담는 배열
+var donutColor = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+var randomDonutColor = 0;
 var point = 0;
 var cumulPoint = 0; // 누적 점수
 
@@ -153,16 +148,16 @@ class App {
 
             this._camera.position.set(x, y, z);
         };
-        const timerId = setInterval(()=>{
-            if(time < 0){
+        const timerId = setInterval(() => {
+            if (time < 0) {
                 clearInterval(this._timerId);
                 return;
             }
-            this._time.innerHTML = "Time: "+time;
+            this._time.innerHTML = "Time: " + time + "초";
             time--;
         }, 1000);
 
-        this._timerId= timerId;
+        this._timerId = timerId;
     }
 
     _setupControls() {
@@ -186,12 +181,9 @@ class App {
         );
         // (zNear ~ zFar) 거리 사이에 존재하는 물체의 일부만 렌더링됨, 이 영역 벗어나면 렌더링x
 
-        // camera.zoom = 2; // 크기 조정(배수) -> Orthographic에만 적용?..
-
         camera.position.z = z; // 카메라의 z좌표 위치 변경
         camera.position.y = y; // 카메라의 y좌표 위치 변경
-        // camera.rotation.set(Math.PI, 0, Math.PI /2);
-        // camera.position.set(7, 7, 0); // 카메라의 위치를 (7, 7, 0)으로 배치
+
         camera.lookAt(0, 60, 0); // 카메라가 (0, 60, 0)을 바라보도록 설정 
 
         // 카메라 객체를 필드화
@@ -199,8 +191,8 @@ class App {
     }
 
     _setupLight() {
-        const color = 0x666666; // 광원의 색
-        const intensity = 1; // 광원의 세기(밝기)
+        const color = 0x999999; // 광원의 색
+        const intensity = 1.3; // 광원의 세기(밝기)
         const light = new THREE.DirectionalLight(color, intensity); // 광원의 색과 세기를 인자 값으로 받아 생성
         this._light = light;
         light.position.set(0, 80, 0); // 광원의 위치 
@@ -215,7 +207,7 @@ class App {
 
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
 
-        // this._scene.add(new THREE.CameraHelper(light.shadow.camera));
+        this._scene.add(new THREE.CameraHelper(light.shadow.camera));
 
     }
 
@@ -241,7 +233,7 @@ class App {
         currentGarbageIndex = random;
         this._img.src = containerTextureArray[random];
         const img = this._textureLoader.load(containerTextureArray[random]);
-        
+
         const materials = [
             new THREE.MeshBasicMaterial({ map: img }),
             new THREE.MeshBasicMaterial({ map: img }),
@@ -257,7 +249,7 @@ class App {
 
         this._container = container;
         this._scene.add(container);
-        
+
         const loader = new THREE.GLTFLoader();
         this._loader = loader;
     }
@@ -320,7 +312,6 @@ class App {
 
             /* 쓰레기통과 현재 Garbage가 교차하면 (= 충돌하면) */
             if (containerBB.intersectsBox(garbageBB) && !isCollision) {
-                // console.log("index: "+currentRandomIndex+" col: "+isCollision);
 
                 /* 현재 garbage의 쓰레기 타입이 현재 쓰레기통의 맵핑 타입과 같다면 */
                 if (garbages[currentRandomIndex].index != -1 && garbages[currentRandomIndex].index == currentGarbageIndex) {
@@ -329,7 +320,43 @@ class App {
                     isTimeAdded = false; // 시간 추가 flag 초기화
                 }
                 else {
-                    if (point > 0 && garbages[currentRandomIndex].index != -1) {
+                    if (garbages[currentRandomIndex].index == 5) {
+                        // var donutColor = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+
+                        switch (randomDonutColor) {
+                            case 0: // Red
+                                MOVE_STEP += 1;
+                                console.log("speed up");
+                                break;
+                            case 1: // Green
+                                if(MOVE_STEP > 1)
+                                MOVE_STEP -= 1;
+                                console.log("speed down");
+                                break;
+                            case 2: // Blue
+                                INITIAL_DROP_SPEED += 0.3;
+                                console.log("dropdown speed up");
+                                break; 
+                            case 3: // Yellow
+                                if(INITIAL_DROP_SPEED > 0.3)
+                                    INITIAL_DROP_SPEED -= 0.3;
+                                console.log("dropdown speed down");
+                                break;
+                            case 4: // Pink
+                                point += 3;
+                                cumulPoint += 3;
+                                console.log("get 3 points");
+                                break;
+                            case 5: // Cyan
+                                JUMP_STEP += 0.2;
+                                time += 8;
+                                this._time.innerHTML = "Time: " + time + "초";
+                                console.log("Jump up and time up");
+                                break;
+                        }
+                        
+                    }
+                    else if(point > 0 && garbages[currentRandomIndex].index != -1) {
                         point--; // 다른 타입과 충돌했다면 점수 차감
                     }
                 }
@@ -339,15 +366,15 @@ class App {
                 garbages[currentRandomIndex].index = -1; // 제거된 obj의 index -1로 초기화
 
                 /* 누적 점수가 3점씩 추가될 때마다 */
-                if(cumulPoint % 3 == 0 && !isTimeAdded){
+                if (cumulPoint % 3 == 0 && !isTimeAdded) {
                     time += 6; // 타이머 6초 추가
-                    this._time.innerHTML = "Time: "+time;
+                    this._time.innerHTML = "Time: " + time + "초";
                     isTimeAdded = true;
                 }
 
                 /* 현재 점수가 1 이상이고, 5의 배수 단위일 때 */
                 if (point > 0 && point % 5 == 0) {
-                    
+
                     var random = Math.floor(Math.random() * 5);
                     currentGarbageIndex = random; // 랜덤 값을 현재 쓰레기 카테고리로 지정
                     this._img.src = containerTextureArray[currentGarbageIndex];
@@ -362,38 +389,43 @@ class App {
                         new THREE.MeshBasicMaterial({ map: loaded }),
                         new THREE.MeshBasicMaterial({ map: loaded }),
                     ];
+                    time += 6;
+                    this._time.innerHTML = "Time: " + time + "초";
                 }
 
                 flag = false;
                 lastIndex = currentRandomIndex;
                 console.log("point: " + point);
-                this._score.innerHTML = 'Score: '+point;
+                this._score.innerHTML = 'Score: ' + point;
             }
             isCollision = false;
         }
 
         this._renderer.render(this._scene, this._camera);
-        // this._control.update();
         requestAnimationFrame(this.render.bind(this));
     }
 
     createDonut() {
-        var geometry = new THREE.TorusGeometry(1, 0.5, 5, 30);
-        var material = new THREE.MeshBasicMaterial({ color: 0xffffff * Math.random });
+        randomDonutColor = Math.floor(Math.random() * donutColor.length);
+
+        var geometry = new THREE.TorusGeometry(1, 0.5, 5, 24);
+        var material = new THREE.MeshBasicMaterial({ color: donutColor[randomDonutColor] });
         var donut = new THREE.Mesh(geometry, material);
 
-        donut.position.x = this.randomRange(-15, 15);
-        donut.position.z = this.randomRange(-15, 15);
-        donut.position.y = 10;
+        donut.position.x = this.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+        donut.position.z = this.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+        donut.position.y = GARBAGE_SPAWN_Y;
 
-        if (garbages.length < TOTAL_GALBAGE) {
-            garbages.push(donut);
-            this._scene.add(donut);
-        }
-        else if (garbages.length == TOTAL_GALBAGE && !flag) {
+        donut.scale.set(4, 4, 4);
+
+        donut.castShadow = true;
+
+        donut.index = 5;
+        if (!flag) {
             flag = true;
             garbages[lastIndex] = donut;
             this._scene.add(donut);
+            isAdded = true;
         }
 
     }
@@ -408,7 +440,7 @@ class App {
 
         if (garbages.length < TOTAL_GALBAGE) {
             isAdded = false;
-            var randomIndex = Math.floor(Math.random() * 5);
+            var randomIndex = Math.floor(Math.random() * (TOTAL_ITEMS - 1));
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
@@ -439,8 +471,12 @@ class App {
         }
         else if (garbages.length == TOTAL_GALBAGE && !flag) {
             isAdded = false;
-            var randomIndex = Math.floor(Math.random() * 5);
+            var randomIndex = Math.floor(Math.random() * TOTAL_ITEMS);
 
+            if (randomIndex == 5) {
+                that.createDonut();
+                return;
+            }
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
                 gltf.scene.scale.set(
