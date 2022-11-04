@@ -12,25 +12,25 @@ var INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는
 var MAX_WEIGHT_SPEED = 4; // 최대 가중치 속도
 const GARBAGE_SPAWN_Y = 70; // 쓰레기 생성 y 위치
 const GROUND_SIZE = 220; // 바닥의 크기
-const CONTAINER_SIZE = 20; // 쓰레기통의 크기
+var CONTAINER_SIZE = 20; // 쓰레기통의 크기
 var MOVE_STEP = 15; // 쓰레기통의 이동 반경
 var JUMP_STEP = 3; // 쓰레기통의 상하 이동 반경
 const THRESHOLD = -30; // 기준 y
 const TOTAL_ITEMS = 6; // 아이템 총 개수
-var LIMIT_CONTAINER_UP = -5;
-var LIMIT_CONTAINER_DOWN = -20;
+var LIMIT_CONTAINER_UP = -5; // 쓰레기통의 최대 이동 y 좌표
+var LIMIT_CONTAINER_DOWN = -20; // 쓰레기통의 최소 이동 y 좌표
 
 var currentGarbageIndex = 1;
-var time = 100;
+var time = 80; // 시작 타이머
 var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
 var flag = true; // 기준 바닥에 닿았는지 판단(= 새로 쓰레기 obj를 만들지)
-var isCollision = false;
-var isTimeAdded = false;
+var isCollision = false; // 충돌 여부
+var isTimeAdded = false; // 점수에 따른 시간 추가 여부
 
 var garbages = []; // 랜덤으로 생성한 도형들을 담는 배열
-var donutColor = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
-var randomDonutColor = 0;
-var point = 0;
+var donutColor = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff]; // 도넛 랜덤 색상 배열
+var randomDonutColor = 0; // 현재 도넛의 랜덤 색상 인덱스
+var point = 0; // 현재 점수
 var cumulPoint = 0; // 누적 점수
 
 var modelPathArray = [
@@ -106,28 +106,28 @@ class App {
             switch (e.key) {
                 case 'a':
                 case 'ArrowLeft':
-                    if (this._container.position.x > -(GROUND_SIZE / 2 - MOVE_STEP)) {
+                    if (this._container.position.x >= -(GROUND_SIZE / 2 - MOVE_STEP)) {
                         x -= MOVE_STEP;
                         this._container.position.x -= MOVE_STEP;
                     }
                     break;
                 case 'd':
                 case 'ArrowRight':
-                    if (this._container.position.x < (GROUND_SIZE / 2 - MOVE_STEP)) {
+                    if (this._container.position.x <= (GROUND_SIZE / 2 - MOVE_STEP)) {
                         x += MOVE_STEP;
                         this._container.position.x += MOVE_STEP;
                     }
                     break;
                 case 'w':
                 case 'ArrowUp':
-                    if (this._container.position.z > -(GROUND_SIZE / 2 - MOVE_STEP)) {
+                    if (this._container.position.z >= -(GROUND_SIZE / 2 - MOVE_STEP)) {
                         z -= MOVE_STEP;
                         this._container.position.z -= MOVE_STEP;
                     }
                     break;
                 case 's':
                 case 'ArrowDown':
-                    if (this._container.position.z < (GROUND_SIZE / 2 - MOVE_STEP)) {
+                    if (this._container.position.z <= (GROUND_SIZE / 2 - MOVE_STEP)) {
                         z += MOVE_STEP;
                         this._container.position.z += MOVE_STEP;
                     }
@@ -151,6 +151,8 @@ class App {
         const timerId = setInterval(() => {
             if (time < 0) {
                 clearInterval(this._timerId);
+
+                this.gameover();
                 return;
             }
             this._time.innerHTML = "Time: " + time + "초";
@@ -163,6 +165,23 @@ class App {
     _setupControls() {
         var control = new THREE.OrbitControls(this._camera, this._divContainer);
         this._control = control;
+    }
+
+    gameover() {
+        var form = document.createElement('form');
+
+        var object;
+        object = document.createElement('input');
+        object.setAttribute('type', 'hidden');
+        object.setAttribute('name', 'score');
+        object.setAttribute('value', point);
+
+        form.appendChild(object);
+        form.setAttribute('method', 'get');
+        form.setAttribute('action', 'gameover.html');
+        document.body.appendChild(form);
+
+        form.submit();
     }
 
     _setupCamera() {
@@ -207,7 +226,7 @@ class App {
 
         this._scene.add(light); // scene에 위에 생성한 광원 요소 추가
 
-        this._scene.add(new THREE.CameraHelper(light.shadow.camera));
+        // this._scene.add(new THREE.CameraHelper(light.shadow.camera));
 
     }
 
@@ -320,43 +339,48 @@ class App {
                     isTimeAdded = false; // 시간 추가 flag 초기화
                 }
                 else {
+                    /* 도넛과 충돌했을 때 */
                     if (garbages[currentRandomIndex].index == 5) {
-                        // var donutColor = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
-
                         switch (randomDonutColor) {
                             case 0: // Red
                                 MOVE_STEP += 1;
                                 console.log("speed up");
                                 break;
                             case 1: // Green
-                                if(MOVE_STEP > 1)
-                                MOVE_STEP -= 1;
+                                if (MOVE_STEP > 2)
+                                    MOVE_STEP -= 2;
                                 console.log("speed down");
                                 break;
                             case 2: // Blue
-                                INITIAL_DROP_SPEED += 0.3;
+                                INITIAL_DROP_SPEED += 0.4;
                                 console.log("dropdown speed up");
-                                break; 
+                                break;
                             case 3: // Yellow
-                                if(INITIAL_DROP_SPEED > 0.3)
-                                    INITIAL_DROP_SPEED -= 0.3;
+                                if (INITIAL_DROP_SPEED > 0.2)
+                                    INITIAL_DROP_SPEED -= 0.2;
                                 console.log("dropdown speed down");
                                 break;
                             case 4: // Pink
                                 point += 3;
                                 cumulPoint += 3;
-                                console.log("get 3 points");
+
+                                if (CONTAINER_SIZE > 3)
+                                    CONTAINER_SIZE -= 3;
+                                this._container.geometry = new THREE.BoxGeometry(CONTAINER_SIZE, 6, CONTAINER_SIZE);
+
+                                console.log("get 3 points and Size down");
                                 break;
                             case 5: // Cyan
-                                JUMP_STEP += 0.2;
-                                time += 8;
+                                CONTAINER_SIZE += 1;
+                                this._container.geometry = new THREE.BoxGeometry(CONTAINER_SIZE, 6, CONTAINER_SIZE);
+
                                 this._time.innerHTML = "Time: " + time + "초";
-                                console.log("Jump up and time up");
+                                console.log("Size up");
                                 break;
                         }
-                        
+
                     }
-                    else if(point > 0 && garbages[currentRandomIndex].index != -1) {
+                    else if (point > 0 && garbages[currentRandomIndex].index != -1) {
                         point--; // 다른 타입과 충돌했다면 점수 차감
                     }
                 }
@@ -444,14 +468,18 @@ class App {
 
             this._loader.load(modelPathArray[randomIndex], function (gltf) {
 
+                // 모델 크기 조정
                 gltf.scene.scale.set(
                     modelScaleArray[randomIndex],
                     modelScaleArray[randomIndex],
                     modelScaleArray[randomIndex]);
-                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
-                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+
+                // 모델 위치 조정
+                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2 + 1), GROUND_SIZE / 2 - 1);
+                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2 + 1), GROUND_SIZE / 2 - 1);
                 gltf.scene.position.y = GARBAGE_SPAWN_Y;
 
+                // 쓰레기 타입 부여
                 gltf.scene.index = randomIndex;
 
                 // GLTF 모델을 traverse 하면서 현재 node 값에 해당하는 obj에 그림자 받기/주기 설정
@@ -484,8 +512,8 @@ class App {
                     modelScaleArray[randomIndex],
                     modelScaleArray[randomIndex]);
 
-                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
-                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2), GROUND_SIZE / 2);
+                gltf.scene.position.x = that.randomRange(-(GROUND_SIZE / 2 + 1), GROUND_SIZE / 2 - 1);
+                gltf.scene.position.z = that.randomRange(-(GROUND_SIZE / 2 + 1), GROUND_SIZE / 2 - 1);
                 gltf.scene.position.y = GARBAGE_SPAWN_Y;
 
                 gltf.scene.index = randomIndex;
@@ -510,5 +538,10 @@ class App {
 
 // 페이지가 모두 로드가 되면 위에 만든 클래스에 대한 인스턴스 생성
 window.onload = function () {
-    new App();
+    document.getElementById("Start").onclick = function (){
+        document.getElementById("top-bar").style.visibility = "visible";
+        document.getElementById("Start").style.visibility = "hidden";
+        document.getElementById("initial").style.visibility = "hidden";
+        new App();
+    }
 }

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background-color: burlywood;
+            overflow: hidden;
+        }
+
+        #score {
+            text-align: center;
+            font-size: 40px;
+            color: crimson;
+            margin-top: 1%;
+        }
+
+        #title {
+            text-align: center;
+            font-size: 56px;
+            font-weight: bold;
+        }
+
+        #box {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 40%;
+            height: 40%;
+            background-color: darkseagreen;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+            margin-top: auto;
+            padding: 2%;
+            border-radius: 8px;
+            border: none;
+            text-align: center;
+        }
+
+        #button {
+            text-align: center;
+            margin-top: 2%;
+            width: 100%;
+        }
+
+        .button {
+            background-color: white;
+            border-radius: 7px;
+            border: none;
+            font-size: 28px;
+            padding: 3%;
+            margin-top: 9%;
+        }
+
+        .button:active {
+            box-shadow: 0 3px #666;
+            transform: translateY(3px);
+        }
+
+        .button:hover {
+            background-color: #bbbbbb
+        }
+    </style>
+    <script>
+        var param = () => {
+            var queryString = document.location.search;
+            queryString = queryString.replace('?score=', '');
+            return queryString;
+        };
+
+        window.onload = () => {
+            document.getElementById("score").innerHTML += "<span> Score: " + param() + "</span>";
+        }
+    </script>
+</head>
+
+<body>
+    <div id="wrap">
+        <div id="box">
+            <div id="title"><span>Game Over</span></div>
+            <div id="score"></div>
+            <div id="button">
+                <input type="button" style="margin-right: 8%;" value="Home" class="button"
+                    onClick="location.href='../index.html'" />
+                <input type="button" value="Restart" class="button" onClick="location.href='basic.html'" />
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
