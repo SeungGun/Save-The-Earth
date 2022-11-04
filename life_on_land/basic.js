@@ -538,7 +538,7 @@ class App {
 
 // 페이지가 모두 로드가 되면 위에 만든 클래스에 대한 인스턴스 생성
 window.onload = function () {
-    document.getElementById("Start").onclick = function (){
+    document.getElementById("Start").onclick = function () {
         document.getElementById("top-bar").style.visibility = "visible";
         document.getElementById("Start").style.visibility = "hidden";
         document.getElementById("initial").style.visibility = "hidden";
