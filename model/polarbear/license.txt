@@ -1,0 +1,11 @@
+Model Information:
+* title:	Weekly 1: Polarbear Sculpt
+* source:	https://sketchfab.com/3d-models/weekly-1-polarbear-sculpt-4a08f225d7e14d06bf96fe0d2dd512b1
+* author:	beewee (https://sketchfab.com/beewee)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Weekly 1: Polarbear Sculpt" (https://sketchfab.com/3d-models/weekly-1-polarbear-sculpt-4a08f225d7e14d06bf96fe0d2dd512b1) by beewee (https://sketchfab.com/beewee) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)

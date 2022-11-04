@@ -1,0 +1,11 @@
+Model Information:
+* title:	Thermomètre train CIWL
+* source:	https://sketchfab.com/3d-models/thermometre-train-ciwl-12f8507c2eae4ce6a73b322a78a2c0c6
+* author:	Ely HADDAD (https://sketchfab.com/ElyHADDAD29)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Thermomètre train CIWL" (https://sketchfab.com/3d-models/thermometre-train-ciwl-12f8507c2eae4ce6a73b322a78a2c0c6) by Ely HADDAD (https://sketchfab.com/ElyHADDAD29) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
