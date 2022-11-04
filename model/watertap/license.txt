@@ -1,0 +1,11 @@
+Model Information:
+* title:	Grohe G-30305000
+* source:	https://sketchfab.com/3d-models/grohe-g-30305000-29403c9ff55147098e5d82ebc446d51c
+* author:	trendforward (https://sketchfab.com/trendforward)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Grohe G-30305000" (https://sketchfab.com/3d-models/grohe-g-30305000-29403c9ff55147098e5d82ebc446d51c) by trendforward (https://sketchfab.com/trendforward) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

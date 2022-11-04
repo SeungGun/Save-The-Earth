@@ -1,0 +1,43 @@
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Clean Water and Sanitation</title>
+        <style>
+            html { font-size: 42px; }
+            .jb-default { font-size: 36px; /*font size*/
+                        color:#555555;
+                        font-weight: 900; /*font bold*/
+                        text-align: center;
+                        line-height: 200%; /*line height*/
+                        background-color: rgb(129, 221, 255); /* ssbg color */
+                        /* opacity: 0.65; font opacity */
+                        display: flex;
+                        flex-direction: column;
+                        max-width:2000px;
+                        position: absolute;      
+                        background:transparent;   /*set bg color transparent*/
+                        z-index: 20;           
+                    } 
+
+            #gl-canvas{
+                        position: absolute;
+                        z-index: 10;
+                    }
+        </style>
+    </head>
+<script type="text/javascript" src="../build/three.min.js"></script>
+<script type="text/javascript" src="../build/GLTFLoader.js"></script>		
+<script type="text/javascript" src="../build/OrbitControls.js"></script>		
+<script type="text/javascript" src="sub_globalwarming.js"></script>
+<body>
+    <div class="jb-default">          
+        <span>Clean Water and Sanitation appears mainly in developing countries in sub-Saharan Africa, Central Asia, South Asia, Eastern Asia, and Southeast Asia. One out of four medical facilities does not even have basic drainage facilities. Three out of 10 people do not use safe drinking water systems, and six out of 10 do not have access to safe sanitary facilities. In 80% of households with no water supply in their homes, women and girls are in charge of getting water. Water shortages are affecting more than 40% of the world's population and are expected to increase in the future. More than 80% of wastewater from human activity is discharged into rivers or oceans without a purification system. Nearly 1,000 children die each day from waterborne diseases and diarrhea related to hygiene. Lack of water, deterioration of water quality, and insufficient sanitary facilities negatively affect food security, livelihoods, and educational opportunities for poor families around the world. In order to improve the water quality environment and improve access to supply, many developing countries in Sub-Saharan Africa, Central Asia, South Asia, Eastern Asia and Southeast Asia need to expand investment in regional water ecosystem and sanitation management.</span>
+    </div>
+    
+<canvas id="gl-canvas">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+</body>
+</html>  
