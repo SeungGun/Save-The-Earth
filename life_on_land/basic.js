@@ -7,7 +7,7 @@ var z = 120; // 카메라 z 좌표;
 
 var lastIndex = 0; // 마지막에 기준치에 달성한 오브젝트의 array index 값
 
-const TOTAL_GALBAGE = 6; // 순환할 쓰레기 오브젝트의 총 개수
+const TOTAL_GALBAGE = 8; // 순환할 쓰레기 오브젝트의 총 개수
 var INITIAL_DROP_SPEED = 3; // 기본 쓰레기 떨어지는 속도(차감되는 y 값)
 var MAX_WEIGHT_SPEED = 4; // 최대 가중치 속도
 const GARBAGE_SPAWN_Y = 70; // 쓰레기 생성 y 위치
@@ -21,7 +21,7 @@ var LIMIT_CONTAINER_UP = -5; // 쓰레기통의 최대 이동 y 좌표
 var LIMIT_CONTAINER_DOWN = -20; // 쓰레기통의 최소 이동 y 좌표
 
 var currentGarbageIndex = 1;
-var time = 80; // 시작 타이머
+var time = 60; // 시작 타이머
 var isAdded = true; // GLTF 모델이 다 로드가 되었는지 판단
 var flag = true; // 기준 바닥에 닿았는지 판단(= 새로 쓰레기 obj를 만들지)
 var isCollision = false; // 충돌 여부
@@ -391,7 +391,7 @@ class App {
 
                 /* 누적 점수가 3점씩 추가될 때마다 */
                 if (cumulPoint % 3 == 0 && !isTimeAdded) {
-                    time += 6; // 타이머 6초 추가
+                    time += 3; // 타이머 6초 추가
                     this._time.innerHTML = "Time: " + time + "초";
                     isTimeAdded = true;
                 }
@@ -543,5 +543,9 @@ window.onload = function () {
         document.getElementById("Start").style.visibility = "hidden";
         document.getElementById("initial").style.visibility = "hidden";
         new App();
+    }
+
+    document.getElementById("Guide").onclick = function(){
+        location.href = "guide.html";
     }
 }
