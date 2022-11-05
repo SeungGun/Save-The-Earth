@@ -1,5 +1,6 @@
 html,
 body {
+    background-color: black;
     overflow: hidden;
     margin: 0;
 }
@@ -55,6 +56,10 @@ body {
 
 #land:hover {
     color: burlywood;
+}
+
+#ocean:hover {
+    color: #9298f4;
 }
 
 #era:hover {

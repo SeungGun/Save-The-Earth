@@ -80,23 +80,46 @@ window.onload = function init()
 		console.error(error);
 	});
 
-	loader.load('./model/map_pin/scene.gltf', function(gltf) {
-		pin5 = gltf.scene.children[0];
-		pin5.scale.set(35, 35, 35);
-		pin5.position.set(-70, 68, 20);
-		pin5.rotation.x = 5.4;
-		pin5.rotation.y = 5.5;
-		scene.add(gltf.scene);
-		animate();
-	}, undefined, function (error) {
-		console.error(error);
-	});
+	// loader.load('./model/map_pin/scene.gltf', function(gltf) {
+	// 	pin5 = gltf.scene.children[0];
+	// 	pin5.scale.set(35, 35, 35);
+	// 	pin5.position.set(-70, 68, 20);
+	// 	pin5.rotation.x = 5.4;
+	// 	pin5.rotation.y = 5.5;
+	// 	scene.add(gltf.scene);
+	// 	animate();
+	// }, undefined, function (error) {
+	// 	console.error(error);
+	// });
 
-    // document.getElementById("pin").onclick = function(event) {
-    //     camera.position.x = 200;
-    //     camera.position.y = 50;
-    //     console.log(camera.position);
-    // }
+	var con1 = document.getElementById('era');
+	var con2 = document.getElementById('ocean');
+	var con3 = document.getElementById('land');
+	var con4 = document.getElementById('climate');
+
+	con1.onmouseover = function() {
+		camera.position.x = 157;
+		camera.position.y = 207;
+		camera.position.z = -2;
+	}
+
+	con2.onmouseover = function() {
+		camera.position.x = 150;
+		camera.position.y = 150;
+		camera.position.z = 150;
+	}
+
+	con3.onmouseover = function() {
+		camera.position.x = -193;
+		camera.position.y = 166;
+		camera.position.z = 51;
+	}
+
+	con4.onmouseover = function() {
+		camera.position.x = 4;
+		camera.position.y = 254;
+		camera.position.z = 53;
+	}
 
 	function animate() {
 		controls.update();

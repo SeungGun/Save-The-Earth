@@ -22,8 +22,8 @@ class Boat {
     loader.load("assets/boat/scene.gltf", (gltf) => {
       scene.add( gltf.scene );
       gltf.scene.scale.set(0.07, 0.07, 0.07);
-      gltf.scene.position.set(0, 0, 35);
-      gltf.scene.rotation.y = 3.1;
+      gltf.scene.position.set(0, 0, 50);
+      gltf.scene.rotation.y = 3.15;
 
       this.boat = gltf.scene
       this.speed = {
@@ -40,8 +40,7 @@ class Boat {
 
   update(){
     if(this.boat){
-      // this.boat.rotation.y += this.speed.rot
-      this.boat.translateZ(this.speed.vel)
+      this.boat.translateZ(this.speed.vel);
     }
   }
 }
@@ -54,7 +53,7 @@ class Trash{
     scene.add( _scene )
     _scene.scale.set(8, 8, 8)
     if(Math.random() > .6){
-      _scene.position.set(random(-10, 10), -0.5, random(-100, 50))
+      _scene.position.set(random(-10, 10), -0.5, random(-700, 60))
     }else{
       // _scene.position.set(random(-500, 500), -0.5, random(-1000, 1000))
     }
@@ -80,7 +79,7 @@ async function createTrash(){
 }
 
 let trashes = []
-const TRASH_COUNT = 100
+const TRASH_COUNT = 200
 
 init();
 animate();
@@ -179,10 +178,12 @@ async function init() {
 
   window.addEventListener( 'keydown', function(e){
     if(e.key == "ArrowUp"){
-      boat.speed.vel = 1
+      boat.speed.vel = 1;
+      camera.position.z -= 0.0365;
     }
     if(e.key == "ArrowDown"){
       boat.speed.vel = -1
+      camera.position.z += 0.0365;
     }
     // if(e.key == "ArrowRight"){
     //   boat.speed.rot = -0.1
@@ -194,16 +195,6 @@ async function init() {
   window.addEventListener( 'keyup', function(e){
     boat.stop()
   })
-
-  // window.addEventListener('scroll', () => {
-  //   const scrollTop = html.scrollTop;
-  //   const maxScrollTop = html.scrollHeight - window.innerHeight;
-  //   const scrollFraction = scrollTop / maxScrollTop;
-  //   const frameIndex = Math.min(
-  //     frameCount - 1,
-  //     Math.floor(scrollFraction * frameCount)
-  //   );
-  // });
 }
 
 function onWindowResize() {
@@ -214,12 +205,6 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
-
-function moveCamera(event) {
-  camera.position.x = -0.5 + window.scrollY / 500.0;
-  this.boat.translateZ(35 + window.scrollY);
-}
-window.addEventListener("scroll", updateCamera);
 
 function isColliding(obj1, obj2){
   return (
@@ -244,13 +229,20 @@ function checkCollisions(){
 function animate() {
   requestAnimationFrame( animate );
   render();
-  boat.update()
-  checkCollisions()
+  boat.update();
+  checkCollisions();
 }
 
 function render() {
   water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
+  // console.log(camera.position);
 
   renderer.render( scene, camera );
 
 }
+
+// function moveCamera(event) {
+//   camera.position.x = -0.5 + window.scrollY / 300.0;
+//   this.boat.translateZ(35 + window.scrollY);
+// }
+// window.addEventListener("scroll", moveCamera);
