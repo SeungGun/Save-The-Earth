@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 
-import Stats from 'three/addons/libs/stats.module.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import Stats from 'three/addons/stats.module.js';
+import { GLTFLoader } from 'three/addons/GLTFLoader.js';
+import { FontLoader } from 'three/addons/FontLoader.js';
+import { TextGeometry } from 'three/addons/TextGeometry.js';
 import { ShadowMapViewer } from 'three/addons/utils/ShadowMapViewer.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GUI } from 'three/addons/lil-gui.module.min.js';
+import { OrbitControls } from 'three/addons/OrbitControls.js';
+import { DRACOLoader } from 'three/addons/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/RoomEnvironment.js';
 
 
 init();
