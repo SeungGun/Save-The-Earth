@@ -2,7 +2,7 @@
 window.onload = function init()
 {
 	const canvas = document.getElementById( "gl-canvas" );
-	canvas.width = window.innerWidth;
+	canvas.width = window.innerWidth * 0.5;
 	canvas.height = window.innerHeight;
 
 	const renderer = new THREE.WebGLRenderer({canvas});

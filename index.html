@@ -1,60 +1,55 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE-edge"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <link rel="stylesheet" href="css.css">
-        <script type="text/javascript" src="build/three.min.js"></script>
-        <script type="text/javascript" src="build/GLTFLoader.js"></script>		
-        <script type="text/javascript" src="build/OrbitControls.js"></script>		
-        <script type="text/javascript" src="build/main.js"></script>
-        <title>Save The Earth</title>
-        <style>
-            html,
-            body{
-                margin: 0;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="Main">
-            <div class='title'>
-                <span>Save The <font color={'#1e90ff'}>Earth</font></span> 
-                <p class="secondSentence">
-                    UN-SDGs: 17 Goals for People, for Planet
-                </p>
-                <p class='thirdSentence'>
-                    Choose a topic below or click on a city
-                </p>
-            </div>
-            <div class="contents">
-                <span id="era" onclick="location.href='sustainable_cities/index.html'">
-                    0. Sustainable Cities and Communities
-                </span>
-                1. Clean Water and Sanitation <br />
-                2. Life Below Water <br />
-                <span id="land" onclick="location.href='life_on_land/basic.html'">
-                    3. Life on Land
-                </span><br/>
-                4. Climate Action <br />
-                5. Zero Hunger <br />
-            </div>
-            <div class="member">
-                <p>2022-2<br />Computer Graphics</p>
-                <p>
-                    • 김주하<br />
-                    • 이민아<br />
-                    • 신승건<br />
-                    • 유소연<br />
-                </p>
-            </div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css.css">
+    <script type="text/javascript" src="build/three.min.js"></script>
+    <script type="text/javascript" src="build/GLTFLoader.js"></script>
+    <script type="text/javascript" src="build/OrbitControls.js"></script>
+    <script type="text/javascript" src="build/main.js"></script>
+    <title>Save The Earth</title>
+</head>
+
+<body>
+    <div class="Main">
+        <div class='title'>
+            <span>Save The <font color={'#1e90ff'}>Earth</font></span>
+            <p class="secondSentence">
+                UN-SDGs: 17 Goals for People, for Planet
+            </p>
+            <p class='thirdSentence'>
+                Choose a topic below or click on a city
+            </p>
         </div>
-        <div class="canvas">
-            <canvas id="gl-canvas" width="50" height="50">
-                Oops ... your browser doesn't support the HTML5 canvas element
-            </canvas>
+        <div class="contents">
+            <span id="era" onclick="location.href='sustainable_cities/index.html'">
+                1. Sustainable Cities and Communities
+            </span><br />
+            2. Life Below Water <br />
+            <span id="land" onclick="location.href='life_on_land/basic.html'">
+                3. Life on Land
+            </span><br />
+            <span id="climate" onclick="location.href='global_warming/sub_globalwarming.html'">
+                4. Climate Action
+            </span><br />
         </div>
-        <script src="Main.js"></script>
-    </body>
+        <div class="member">
+            <p>2022-2<br />Computer Graphics</p>
+            <p>
+                • 김주하<br />
+                • 이민아<br />
+                • 신승건<br />
+                • 유소연<br />
+            </p>
+        </div>
+    </div>
+    <canvas id="gl-canvas">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    </div>
+</body>
+
 </html>

@@ -1,23 +1,19 @@
-body{
-    background-color: black;
+html,
+body {
+    overflow: hidden;
+    margin: 0;
 }
 
 .Main {
     background-color: black;
-    height: 1024px;
-    width:30%;
-    margin-left: 50px;
+    width: 50%;
+    height: 50%;
     float: left;
-    box-sizing: border-box;
-    border-right: solid 10px white;
 }
 
-.canvas {
-    width: 100px;
-    margin-left: -1000px;
-    float: right;
-    box-sizing: border-box;
-    border-left: solid 10px white;
+#gl-canvas {
+    width: 50%;
+    position: absolute;
 }
 
 .title {
@@ -25,37 +21,46 @@ body{
     padding-top: 8%;
     color: white;
     font-size: 45px;
-  }
-
-.secondSentence{
-    color: white;
-    margin:10px;
-    margin-left: 0px;
-    font-size: 28px; 
 }
 
-.thirdSentence{
-    font-size: 18px; 
+.secondSentence {
+    color: white;
+    margin: 10px;
+    margin-left: 0px;
+    font-size: 28px;
+}
+
+.thirdSentence {
+    font-size: 18px;
     margin: 10px;
     margin-left: 0px;
     color: greenyellow;
 }
 
-.contents{
+.contents {
     color: white;
     font-size: 27px;
     margin-left: 15%;
     margin-top: 35px;
+    margin-bottom: 80px;
     line-height: 1.5;
 }
 
-.member{
-    color:white;
+.member {
+    color: white;
     font-size: 18px;
-    margin-left:15%;
-    margin-top: 100px;
+    margin-left: 15%;
+    margin-bottom: 120px;
 }
 
-#land:hover{
+#land:hover {
     color: burlywood;
+}
+
+#era:hover {
+    color: #bfe3dd;
+}
+
+#climate:hover{
+    color: #AED6F1;
 }
