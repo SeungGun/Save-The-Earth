@@ -1,21 +1,99 @@
 import * as THREE from 'three';
 
-import Stats from 'three/addons/libs/stats.module.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import Stats from 'three/addons/stats.module.js';
+import { GLTFLoader } from 'three/addons/GLTFLoader.js';
+import { FontLoader } from 'three/addons/FontLoader.js';
+import { TextGeometry } from 'three/addons/TextGeometry.js';
 import { ShadowMapViewer } from 'three/addons/utils/ShadowMapViewer.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+// import { GUI } from 'three/addons/lil-gui.module.min.js';
+import { OrbitControls } from 'three/addons/OrbitControls.js';
+import { DRACOLoader } from 'three/addons/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/RoomEnvironment.js';
+
+function mainPage() {
+    // main page
+    const container = document.getElementById("container0");
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    container.appendChild( renderer.domElement );
+    let camera = new THREE.PerspectiveCamera(75, 2, 0.1, 7);
+    camera.position.z = 3;
+
+    let scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x808080);
+
+    {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.position.set(-1, 2, 4);
+        scene.add(light);
+    }
+    const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+    const sdgsloader = new THREE.TextureLoader();
+    const materials = [
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+        new THREE.MeshBasicMaterial({ map: sdgsloader.load("./sdg-11.png") }),
+    ];  
+    const cube = new THREE.Mesh(geometry, materials);
+    scene.add(cube);
+
+    function render(time){
+        time *= 0.001;
+        // const speed = 1 + ndx * .1;
+        // const rot = time * speed;
+        cube.rotation.x = time;
+        cube.rotation.y = time;
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+}
 
 
 init();
     
 function init() {
-    document.getElementById("primitive").onclick = function(){        
-        
+    
+    mainPage();
+
+    document.getElementById("main").onclick = function(){
+        document.getElementById('subs2').style.display = "block";
+
+        // Change the map to main page
+        if(document.getElementById('container0')){
+            const delContainer = document.getElementById("container0");
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        const temp = document.createElement('div');
+        temp.id = 'container0';
+        document.body.appendChild(temp);
+
+        if(document.getElementById('container1')){
+            const delContainer = document.getElementById('container1');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container2')){
+            const delContainer = document.getElementById('container2');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container3')){
+            const delContainer = document.getElementById('container3');
+            delContainer.parentNode.removeChild(delContainer);
+        }        
+        mainPage();
+    }
+
+    document.getElementById("primitive").onclick = function(){ 
+        document.getElementById('subs2').style.display = "none";
+
         // Change the map to primitive era
         if(document.getElementById('container1')){
             const delContainer = document.getElementById('container1');
@@ -25,8 +103,16 @@ function init() {
         temp.id = 'container1';
         document.body.appendChild(temp);
         
+        if(document.getElementById('container0')){
+            const delContainer = document.getElementById('container0');
+            delContainer.parentNode.removeChild(delContainer);
+        }
         if(document.getElementById('container2')){
             const delContainer = document.getElementById('container2');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container3')){
+            const delContainer = document.getElementById('container3');
             delContainer.parentNode.removeChild(delContainer);
         }
         const container = document.getElementById("container1");
@@ -66,16 +152,12 @@ function init() {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFShadowMap;
 
-
-
-        // SCENE
-    
+        // SCENE    
         scene = new THREE.Scene();
         scene.background = new THREE.Color( 0x59472b );
         scene.fog = new THREE.Fog( 0x59472b, 1000, FAR );
     
         // LIGHTS
-    
         // light 2
         const ambient = new THREE.AmbientLight( 0x444444 );
         scene.add( ambient );
@@ -142,10 +224,6 @@ function init() {
         human.position.set(...humanPosition);
         scene.add( human );
     
-        human.addEventListener('click', function(){
-            alert('sibal')
-        })
-    
         human.traverse( function ( object ) {
             if ( object.isMesh ) object.castShadow = true;
         } );
@@ -183,8 +261,6 @@ function init() {
                 allActions.push( action );
             }
         }
-    
-        createPanel();
     } );
     function activateAction( action ) {
         const clip = action.getClip();
@@ -196,131 +272,6 @@ function init() {
         action.enabled = true;
         action.setEffectiveTimeScale( 1 );
         action.setEffectiveWeight( weight );
-    }
-    function createPanel() {
-    
-        const panel = new GUI( { width: 310 } );
-    
-        const folder1 = panel.addFolder( 'Base Actions' );
-        const folder2 = panel.addFolder( 'Additive Action Weights' );
-        const folder3 = panel.addFolder( 'General Speed' );
-    
-        panelSettings = {
-            'modify time scale': 0.7
-        };
-    
-        const baseNames = [ 'None', ...Object.keys( baseActions ) ];
-    
-        for ( let i = 0, l = baseNames.length; i !== l; ++ i ) {
-    
-            const name = baseNames[ i ];
-            const settings = baseActions[ name ];
-            panelSettings[ name ] = function () {
-    
-                const currentSettings = baseActions[ currentBaseAction ];
-                const currentAction = currentSettings ? currentSettings.action : null;
-                const action = settings ? settings.action : null;
-    
-                if ( currentAction !== action ) {
-                    prepareCrossFade( currentAction, action, 0.35 );
-                }
-            };
-    
-            crossFadeControls.push( folder1.add( panelSettings, name ) );
-        }
-    
-        for ( const name of Object.keys( additiveActions ) ) {
-    
-            const settings = additiveActions[ name ];
-    
-            panelSettings[ name ] = settings.weight;
-            folder2.add( panelSettings, name, 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
-    
-                setWeight( settings.action, weight );
-                settings.weight = weight;
-    
-            } );
-    
-        }
-    
-        folder3.add( panelSettings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
-    
-        folder1.open();
-        folder2.open();
-        folder3.open();
-    
-        crossFadeControls.forEach( function ( control ) {
-    
-            control.setInactive = function () {
-                control.domElement.classList.add( 'control-inactive' );
-            };
-    
-            control.setActive = function () {
-                control.domElement.classList.remove( 'control-inactive' );
-            };
-    
-            const settings = baseActions[ control.property ];
-            if ( ! settings || ! settings.weight ) {
-                control.setInactive();
-            }
-        } );
-    }
-    function modifyTimeScale( speed ) {
-        mixerHuman.timeScale = speed;
-    }
-    function prepareCrossFade( startAction, endAction, duration ) {
-    
-        // If the current action is 'idle', execute the crossfade immediately;
-        // else wait until the current action has finished its current loop
-        if ( currentBaseAction === 'idle' || ! startAction || ! endAction ) {
-            executeCrossFade( startAction, endAction, duration );
-        } else {
-            synchronizeCrossFade( startAction, endAction, duration );
-        }
-    
-        // Update control colors
-        if ( endAction ) {
-            const clip = endAction.getClip();
-            currentBaseAction = clip.name;
-        } else {
-            currentBaseAction = 'None';
-        }
-    
-        crossFadeControls.forEach( function ( control ) {
-            const name = control.property;
-            if ( name === currentBaseAction ) {
-                control.setActive();
-            } else {
-                control.setInactive();
-            }
-        } );
-    }
-    function executeCrossFade( startAction, endAction, duration ) {
-        // Not only the start action, but also the end action must get a weight of 1 before fading
-        // (concerning the start action this is already guaranteed in this place)
-        if ( endAction ) {
-            setWeight( endAction, 1 );
-            endAction.time = 0;
-            if ( startAction ) {
-                // Crossfade with warping
-                startAction.crossFadeTo( endAction, duration, true );
-            } else {
-                // Fade in
-                endAction.fadeIn( duration );
-            }
-        } else {
-            // Fade out
-            startAction.fadeOut( duration );
-        }
-    }
-    function synchronizeCrossFade( startAction, endAction, duration ) {
-        mixerHuman.addEventListener( 'loop', onLoopFinished );
-        function onLoopFinished( event ) {
-            if ( event.action === startAction ) {
-                mixerHuman.removeEventListener( 'loop', onLoopFinished );
-                executeCrossFade( startAction, endAction, duration );
-            }
-        }
     }
     
     function onWindowResize() {
@@ -339,18 +290,15 @@ function init() {
                 break;
     
         }
-    
     }
     
     function createHUD() {
-    
         lightShadowMapViewer = new ShadowMapViewer( light );
         lightShadowMapViewer.position.x = 10;
         lightShadowMapViewer.position.y = SCREEN_HEIGHT - ( SHADOW_MAP_HEIGHT / 4 ) - 10;
         lightShadowMapViewer.size.width = SHADOW_MAP_WIDTH / 4;
         lightShadowMapViewer.size.height = SHADOW_MAP_HEIGHT / 4;
         lightShadowMapViewer.update();
-    
     }
     
     function createScene( ) {
@@ -535,7 +483,8 @@ function init() {
     }
 
     document.getElementById("middle").onclick = function(){
-        
+        document.getElementById('subs2').style.display = "none";
+
         // Change the map to middle era
         if(document.getElementById('container2')){
             const delContainer = document.getElementById('container2');
@@ -545,8 +494,16 @@ function init() {
         temp.id = 'container2';
         document.body.appendChild(temp);
 
+        if(document.getElementById('container0')){
+            const delContainer = document.getElementById('container0');
+            delContainer.parentNode.removeChild(delContainer);
+        }
         if(document.getElementById('container1')){
             const delContainer = document.getElementById('container1');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container3')){
+            const delContainer = document.getElementById('container3');
             delContainer.parentNode.removeChild(delContainer);
         }
         const container = document.getElementById("container2");
@@ -678,8 +635,6 @@ function init() {
                     allActions.push( action );
                 }
             }
-
-            // createPanel();
         } );
         function activateAction( action ) {
             const clip = action.getClip();
@@ -692,132 +647,6 @@ function init() {
             action.setEffectiveTimeScale( 1 );
             action.setEffectiveWeight( weight );
         }
-    // function createPanel() {
-
-    //     const panel = new GUI( { width: 310 } );
-
-    //     const folder1 = panel.addFolder( 'Base Actions' );
-    //     const folder2 = panel.addFolder( 'Additive Action Weights' );
-    //     const folder3 = panel.addFolder( 'General Speed' );
-
-    //     panelSettings = {
-    //         'modify time scale': 1.0
-    //     };
-
-    //     const baseNames = [ 'None', ...Object.keys( baseActions ) ];
-
-    //     for ( let i = 0, l = baseNames.length; i !== l; ++ i ) {
-
-    //         const name = baseNames[ i ];
-    //         const settings = baseActions[ name ];
-    //         panelSettings[ name ] = function () {
-
-    //             const currentSettings = baseActions[ currentBaseAction ];
-    //             const currentAction = currentSettings ? currentSettings.action : null;
-    //             const action = settings ? settings.action : null;
-
-    //             if ( currentAction !== action ) {
-    //                 prepareCrossFade( currentAction, action, 0.35 );
-    //             }
-    //         };
-
-    //         crossFadeControls.push( folder1.add( panelSettings, name ) );
-    //     }
-
-    //     for ( const name of Object.keys( additiveActions ) ) {
-
-    //         const settings = additiveActions[ name ];
-
-    //         panelSettings[ name ] = settings.weight;
-    //         folder2.add( panelSettings, name, 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
-
-    //             setWeight( settings.action, weight );
-    //             settings.weight = weight;
-
-    //         } );
-
-    //     }
-
-    //     folder3.add( panelSettings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
-
-    //     folder1.open();
-    //     folder2.open();
-    //     folder3.open();
-
-    //     crossFadeControls.forEach( function ( control ) {
-
-    //         control.setInactive = function () {
-    //             control.domElement.classList.add( 'control-inactive' );
-    //         };
-
-    //         control.setActive = function () {
-    //             control.domElement.classList.remove( 'control-inactive' );
-    //         };
-
-    //         const settings = baseActions[ control.property ];
-    //         if ( ! settings || ! settings.weight ) {
-    //             control.setInactive();
-    //         }
-    //     } );
-    // }
-    // function modifyTimeScale( speed ) {
-    //     mixerHuman.timeScale = speed;
-    // }
-    // function prepareCrossFade( startAction, endAction, duration ) {
-
-    //     // If the current action is 'idle', execute the crossfade immediately;
-    //     // else wait until the current action has finished its current loop
-    //     if ( currentBaseAction === 'idle' || ! startAction || ! endAction ) {
-    //         executeCrossFade( startAction, endAction, duration );
-    //     } else {
-    //         synchronizeCrossFade( startAction, endAction, duration );
-    //     }
-
-    //     // Update control colors
-    //     if ( endAction ) {
-    //         const clip = endAction.getClip();
-    //         currentBaseAction = clip.name;
-    //     } else {
-    //         currentBaseAction = 'None';
-    //     }
-
-    //     crossFadeControls.forEach( function ( control ) {
-    //         const name = control.property;
-    //         if ( name === currentBaseAction ) {
-    //             control.setActive();
-    //         } else {
-    //             control.setInactive();
-    //         }
-    //     } );
-    // }
-    function executeCrossFade( startAction, endAction, duration ) {
-        // Not only the start action, but also the end action must get a weight of 1 before fading
-        // (concerning the start action this is already guaranteed in this place)
-        if ( endAction ) {
-            setWeight( endAction, 1 );
-            endAction.time = 0;
-            if ( startAction ) {
-                // Crossfade with warping
-                startAction.crossFadeTo( endAction, duration, true );
-            } else {
-                // Fade in
-                endAction.fadeIn( duration );
-            }
-        } else {
-            // Fade out
-            startAction.fadeOut( duration );
-        }
-    }
-    // function synchronizeCrossFade( startAction, endAction, duration ) {
-    //     mixerHuman.addEventListener( 'loop', onLoopFinished );
-    //     function onLoopFinished( event ) {
-    //         if ( event.action === startAction ) {
-    //             mixerHuman.removeEventListener( 'loop', onLoopFinished );
-    //             executeCrossFade( startAction, endAction, duration );
-    //         }
-    //     }
-    // }
-
 
     // draw flamingo
     const flamingo = new GLTFLoader();
@@ -842,53 +671,6 @@ function init() {
         mixers.push( mixer );
 
     } );
-
-
-    // draw ferrari
-    const carLoader = new GLTFLoader();
-    carLoader.setDRACOLoader( dracoLoader );
-    const shadow = new THREE.TextureLoader().load( '../model/middle/ferrari_ao.png' );
-    carLoader.load( '../model/middle/ferrari.glb', function ( gltf ) {
-
-        const bodyMaterial = new THREE.MeshPhysicalMaterial( {
-            color: 0x000000, metalness: 1.0, roughness: 0.8,
-            clearcoat: 1.0, clearcoatRoughness: 0.2
-        } );
-
-        const detailsMaterial = new THREE.MeshStandardMaterial( {
-            color: 0xffffff, metalness: 1.0, roughness: 0.5
-        } );
-
-        const glassMaterial = new THREE.MeshPhysicalMaterial( {
-            color: 0xffffff, metalness: 0.25, roughness: 0, transmission: 1.0
-        } );
-
-        const carModel = gltf.scene.children[ 0 ];
-        carModel.position.set(3.5, -1, -5);
-        carModel.rotation.y = Math.PI;
-        carModel.scale.multiplyScalar(0.4)
-
-        carModel.getObjectByName( 'body' ).material = bodyMaterial;
-        carModel.getObjectByName( 'rim_fl' ).material = detailsMaterial;
-        carModel.getObjectByName( 'rim_fr' ).material = detailsMaterial;
-        carModel.getObjectByName( 'rim_rr' ).material = detailsMaterial;
-        carModel.getObjectByName( 'rim_rl' ).material = detailsMaterial;
-        carModel.getObjectByName( 'trim' ).material = detailsMaterial;
-        carModel.getObjectByName( 'glass' ).material = glassMaterial;
-
-        // shadow
-        const mesh = new THREE.Mesh(
-            new THREE.PlaneGeometry( 0.655 * 4, 1.3 * 4 ),
-            new THREE.MeshBasicMaterial( {
-                map: shadow, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true
-            } )
-        );
-        mesh.rotation.x = - Math.PI / 2;
-        mesh.renderOrder = 2;
-        carModel.add( mesh );
-        scene.add( carModel );
-    } );
-
 
 
     window.onresize = function () {
@@ -929,6 +711,246 @@ function init() {
         renderer.render( scene, camera );
 
     }
+    }
+
+    document.getElementById("modern").onclick = function(){
+        document.getElementById('subs2').style.display = "none";
+        
+        // Change the map to middle era
+         if(document.getElementById('container3')){
+            const delContainer = document.getElementById('container3');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        const temp = document.createElement('div');
+        temp.id = 'container3';
+        document.body.appendChild(temp);
+
+        if(document.getElementById('container0')){
+            const delContainer = document.getElementById('container0');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container1')){
+            const delContainer = document.getElementById('container1');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        if(document.getElementById('container2')){
+            const delContainer = document.getElementById('container2');
+            delContainer.parentNode.removeChild(delContainer);
+        }
+        const container = document.getElementById("container3");
+
+
+        const clock = new THREE.Clock();
+        const renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        container.appendChild( renderer.domElement );
+
+        const pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+        const scene = new THREE.Scene();
+        // scene.background = new THREE.Color( 0xbfe3dd );
+        scene.background = new THREE.Color( 0xa0a0a0 );
+        scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
+        scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
+
+        // light 1
+        const hemiLight = new THREE.HemisphereLight( 0xffee44, 0x444444 );
+        hemiLight.position.set( 0, 0, 4000 );
+        scene.add( hemiLight );
+
+        const ground = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x867d8c, depthWrite: false } ) );
+        ground.rotation.x = - Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add( ground );
+
+        const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
+        camera.position.set( -2, 1.5, 8 );
+        // camera.rotation.set(-100, 0, -220)
+
+        const controls = new OrbitControls( camera, renderer.domElement );
+        controls.target.set( 0, 0.5, 0 );
+        controls.update();
+        controls.enablePan = false;
+        controls.enableDamping = true;
+
+        // // draw building
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath( '../jsm/draco/' );
+
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader( dracoLoader );
+        loader.load( '../model/modern/scene.gltf', function ( gltf ) {
+            const model = gltf.scene;
+            model.position.set( -1, -2.1, -3 );
+	        model.scale.set( 0.1, 0.1, 0.1 );
+            // model.rotation.set(0, 140, 0)
+            scene.add( model );
+
+            animate();
+
+        }, undefined, function ( e ) {
+
+            console.error( e );
+
+        } );    
+
+
+        // draw human
+        let mixerHuman, skeleton;
+        const allActions = [];
+        const baseActions = {
+            idle: { weight: 0 },
+            walk: { weight: 0 },
+            run: { weight: 1 }
+        };
+        const additiveActions = {
+            sneak_pose: { weight: 0 },
+            sad_pose: { weight: 0 },
+            agree: { weight: 0 },
+            headShake: { weight: 0 }
+        };
+        let panelSettings, numAnimations;
+
+        let humanLoader = new GLTFLoader();
+        humanLoader.load( '../model/modern/Xbot.glb', function ( gltf ) {
+
+            let human = gltf.scene;
+            human.scale.multiplyScalar(0.5);
+            human.position.z = 2.5;
+            human.position.y = -1;
+            human.position.x = 0;
+            scene.add( human );
+
+            human.traverse( function ( object ) {
+                if ( object.isMesh ) object.castShadow = true;
+            } );
+
+            skeleton = new THREE.SkeletonHelper( human );
+            skeleton.visible = false;
+            scene.add( skeleton );
+
+            const animations = gltf.animations;
+            mixerHuman = new THREE.AnimationMixer( human );
+
+            numAnimations = animations.length;
+
+            for ( let i = 0; i !== numAnimations; ++ i ) {
+
+                let clip = animations[ i ];
+                const name = clip.name;
+
+                if ( baseActions[ name ] ) {
+                    const action = mixerHuman.clipAction( clip );
+                    activateAction( action );
+                    baseActions[ name ].action = action;
+                    allActions.push( action );
+                } 
+                else if ( additiveActions[ name ] ) {
+                    // Make the clip additive and remove the reference frame
+                    THREE.AnimationUtils.makeClipAdditive( clip );
+                    if ( clip.name.endsWith( '_pose' ) ) {
+
+                        clip = THREE.AnimationUtils.subclip( clip, clip.name, 2, 3, 30 );
+
+                    }
+                    const action = mixerHuman.clipAction( clip );
+                    activateAction( action );
+                    additiveActions[ name ].action = action;
+                    allActions.push( action );
+                }
+            }
+        } );
+        function activateAction( action ) {
+
+            const clip = action.getClip();
+            const settings = baseActions[ clip.name ] || additiveActions[clip.name];
+            setWeight( action, settings.weight );
+            action.play();
+
+        }
+        function setWeight( action, weight ) {
+            action.enabled = true;
+            action.setEffectiveTimeScale( 1 );
+            action.setEffectiveWeight( weight );
+        }
+
+
+        // draw ferrari
+        const carLoader = new GLTFLoader();
+        carLoader.setDRACOLoader( dracoLoader );
+        const shadow = new THREE.TextureLoader().load( '../model/modern/ferrari_ao.png' );
+        carLoader.load( '../model/modern/ferrari.glb', function ( gltf ) {
+
+            const bodyMaterial = new THREE.MeshPhysicalMaterial( {
+                color: 0x000000, metalness: 1.0, roughness: 0.8,
+                clearcoat: 1.0, clearcoatRoughness: 0.2
+            } );
+
+            const detailsMaterial = new THREE.MeshStandardMaterial( {
+                color: 0xffffff, metalness: 1.0, roughness: 0.5
+            } );
+
+            const glassMaterial = new THREE.MeshPhysicalMaterial( {
+                color: 0xffffff, metalness: 0.25, roughness: 0, transmission: 1.0
+            } );
+
+            const carModel = gltf.scene.children[ 0 ];
+            carModel.position.set(3, -1, 0);
+            carModel.rotation.y = Math.PI;
+            carModel.scale.multiplyScalar(0.4)
+
+            carModel.getObjectByName( 'body' ).material = bodyMaterial;
+            carModel.getObjectByName( 'rim_fl' ).material = detailsMaterial;
+            carModel.getObjectByName( 'rim_fr' ).material = detailsMaterial;
+            carModel.getObjectByName( 'rim_rr' ).material = detailsMaterial;
+            carModel.getObjectByName( 'rim_rl' ).material = detailsMaterial;
+            carModel.getObjectByName( 'trim' ).material = detailsMaterial;
+            carModel.getObjectByName( 'glass' ).material = glassMaterial;
+
+            // shadow
+            const mesh = new THREE.Mesh(
+                new THREE.PlaneGeometry( 0.655 * 4, 1.3 * 4 ),
+                new THREE.MeshBasicMaterial( {
+                    map: shadow, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true
+                } )
+            );
+            mesh.rotation.x = - Math.PI / 2;
+            mesh.renderOrder = 2;
+            carModel.add( mesh );
+            scene.add( carModel );
+        } );
+
+
+        window.onresize = function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        };
+
+
+        function animate() {
+
+            requestAnimationFrame( animate );
+
+            const delta = clock.getDelta();
+
+            for ( let i = 0; i !== numAnimations; ++ i ) {
+                const action = allActions[ i ];
+                let clip = action.getClip();
+                const settings = baseActions[ clip.name ] || additiveActions[clip.name];
+                settings.weight = action.getEffectiveWeight();
+            }
+            mixerHuman.update( delta );
+
+            controls.update();
+
+            renderer.render( scene, camera );
+
+        }
+
+
     }
 }
         
