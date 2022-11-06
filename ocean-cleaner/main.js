@@ -47,13 +47,12 @@ class Boat {
 
 const boat = new Boat()
 
-
 class Trash{
   constructor(_scene){
     scene.add( _scene )
     _scene.scale.set(8, 8, 8)
     if(Math.random() > .6){
-      _scene.position.set(random(-10, 10), -0.5, random(-700, 60))
+      _scene.position.set(random(-10, 10), -0.5, random(-200, 60))
     }else{
       // _scene.position.set(random(-500, 500), -0.5, random(-1000, 1000))
     }
@@ -79,7 +78,7 @@ async function createTrash(){
 }
 
 let trashes = []
-const TRASH_COUNT = 200
+const TRASH_COUNT = 120;
 
 init();
 animate();
@@ -145,7 +144,6 @@ async function init() {
   const pmremGenerator = new THREE.PMREMGenerator( renderer );
 
   function updateSun() {
-
     const phi = THREE.MathUtils.degToRad( 90 - parameters.elevation );
     const theta = THREE.MathUtils.degToRad( parameters.azimuth );
 
@@ -155,9 +153,7 @@ async function init() {
     water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
 
     scene.environment = pmremGenerator.fromScene( sky ).texture;
-
   }
-
   updateSun();
 
   controls = new OrbitControls( camera, renderer.domElement );
@@ -179,18 +175,13 @@ async function init() {
   window.addEventListener( 'keydown', function(e){
     if(e.key == "ArrowUp"){
       boat.speed.vel = 1;
-      camera.position.z -= 0.0365;
+      camera.position.z -= boat.speed.vel;
+      // camera.position.z -= 0.0365;
     }
     if(e.key == "ArrowDown"){
       boat.speed.vel = -1
-      camera.position.z += 0.0365;
+      camera.position.z += 0.1;
     }
-    // if(e.key == "ArrowRight"){
-    //   boat.speed.rot = -0.1
-    // }
-    // if(e.key == "ArrowLeft"){
-    //   boat.speed.rot = 0.1
-    // }
   })
   window.addEventListener( 'keyup', function(e){
     boat.stop()
@@ -216,7 +207,6 @@ function isColliding(obj1, obj2){
 function checkCollisions(){
   if(boat.boat){
     trashes.forEach(trash => {
-      console.log("hello")
       if(trash.trash){
         if(isColliding(boat.boat, trash.trash)){
           scene.remove(trash.trash)

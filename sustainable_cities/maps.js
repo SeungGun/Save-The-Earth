@@ -158,14 +158,12 @@ function init() {
         scene.fog = new THREE.Fog( 0x59472b, 1000, FAR );
     
         // LIGHTS
-        // light 2
         const ambient = new THREE.AmbientLight( 0x444444 );
         scene.add( ambient );
     
         light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI / 30, 0.3 );
         light.position.set( 0, 6000, 7500 );
         light.target.position.set( 0, 0, 0 );
-        light.penumbra = 0
         light.castShadow = true;
         light.shadow.camera.near = 1200;
         light.shadow.camera.far = 1500;
@@ -186,21 +184,17 @@ function init() {
         controls.noFly = false;
         controls.lookVertical = true;
         controls.target.set( 0, 0.5, 0 );
-        // controls.lookAt( scene.position );
     
         // STATS
         stats = new Stats();
     
         //
         window.addEventListener( 'resize', onWindowResize );
-        window.addEventListener( 'keydown', onKeyDown );
 
 
         // draw human
         let humanPosition;
         let mixerHuman, skeleton;
-        const crossFadeControls = [];
-        let currentBaseAction = 'walk';
         const allActions = [];
         const baseActions = {
             idle: { weight: 1 },
@@ -213,7 +207,7 @@ function init() {
             agree: { weight: 0 },
             headShake: { weight: 0 }
         };
-        let panelSettings, numAnimations;
+        let numAnimations;
         
         const humanLoader = new GLTFLoader();
         humanLoader.load( '../model/primitive/Xbot.glb', function ( gltf ) {
@@ -275,21 +269,9 @@ function init() {
     }
     
     function onWindowResize() {
-    
         SCREEN_WIDTH = window.innerWidth;
         SCREEN_HEIGHT = window.innerHeight;
         renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );    
-    }
-    
-    function onKeyDown( event ) {
-    
-        switch ( event.keyCode ) {
-    
-            case 84:	
-                showHUD = ! showHUD;
-                break;
-    
-        }
     }
     
     function createHUD() {
