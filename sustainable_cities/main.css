@@ -44,8 +44,9 @@ body {
 	padding-bottom: 10px;
     background: rgba(245, 130, 37, 0.6);
     text-align: center;
-    color: #4E4C48;
+    color: black;
     font-size: 1.2em;
+	border-radius: 10px;
   }
   .item2 {
 	width: 550px;
@@ -55,8 +56,9 @@ body {
 	padding-bottom: 10px;
     background: rgba(245, 130, 37, 0.6);
     text-align: center;
-    color: #4E4C48;
+    color: black;
     font-size: 1.2em;
+	border-radius: 10px;
   }
 
 
